@@ -42,3 +42,7 @@ func openEditor(filepath string) error {
 func CopyToClipboard(s string) error {
 	return clipboard.WriteAll(s)
 }
+
+func PasteFromClipboard() (string, error) {
+	return clipboard.ReadAll()
+}

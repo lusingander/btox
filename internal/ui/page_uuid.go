@@ -72,7 +72,7 @@ func newUuidPageModel() uuidPageModel {
 }
 
 type uuidPageDelegateKeyMap struct {
-	enter, back, tab, shiftTab, h, j, k, l, c, x key.Binding
+	enter, back, tab, shiftTab, h, j, k, l, c, v, x key.Binding
 }
 
 func newUuidPageDelegateKeyMap() uuidPageDelegateKeyMap {
@@ -112,6 +112,10 @@ func newUuidPageDelegateKeyMap() uuidPageDelegateKeyMap {
 		c: key.NewBinding(
 			key.WithKeys("c", "y"),
 			key.WithHelp("c", ""),
+		),
+		v: key.NewBinding(
+			key.WithKeys("v", "p"),
+			key.WithHelp("v", ""),
 		),
 		x: key.NewBinding(
 			key.WithKeys("x"),
@@ -153,6 +157,12 @@ func (m uuidPageModel) copyIds() {
 	}
 	// fixme: err
 	_ = app.CopyToClipboard(s)
+}
+
+func (m *uuidPageModel) paste() {
+	// fixme: err
+	s, _ := app.PasteFromClipboard()
+	m.ids = strings.Split(s, "\n")
 }
 
 func (m *uuidPageModel) switchSelectedItem(left bool) tea.Cmd {
@@ -247,6 +257,10 @@ func (m uuidPageModel) Update(msg tea.Msg) (uuidPageModel, tea.Cmd) {
 			return m, nil
 		case key.Matches(msg, m.delegateKeys.c):
 			m.copyIds()
+			return m, nil
+		case key.Matches(msg, m.delegateKeys.v):
+			m.paste()
+			m.updateContent()
 			return m, nil
 		case key.Matches(msg, m.delegateKeys.x):
 			m.edit()
