@@ -8,6 +8,12 @@ func selectUuidMenu() tea.Msg {
 	return selectUuidMenuMsg{}
 }
 
+type selectHashMenuMsg struct{}
+
+func selectHashMenu() tea.Msg {
+	return selectHashMenuMsg{}
+}
+
 type goBackMsg struct{}
 
 func goBack() tea.Msg {

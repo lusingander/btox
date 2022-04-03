@@ -8,12 +8,17 @@ import (
 
 const (
 	menuPageUuidMenu = "UUID"
+	menuPageHashMenu = "Hash"
 )
 
 var menuPageItems = []list.Item{
 	menuPageListItem{
 		title:       menuPageUuidMenu,
 		description: "generate and format UUID",
+	},
+	menuPageListItem{
+		title:       menuPageHashMenu,
+		description: "calculate hash",
 	},
 }
 
@@ -63,6 +68,8 @@ func (m menuPageModel) Update(msg tea.Msg) (menuPageModel, tea.Cmd) {
 			switch menu.title {
 			case menuPageUuidMenu:
 				return m, selectUuidMenu
+			case menuPageHashMenu:
+				return m, selectHashMenu
 			}
 			return m, nil
 		}
