@@ -14,6 +14,12 @@ func selectHashMenu() tea.Msg {
 	return selectHashMenuMsg{}
 }
 
+type selectColorMenuMsg struct{}
+
+func selectColorMenu() tea.Msg {
+	return selectColorMenuMsg{}
+}
+
 type goBackMsg struct{}
 
 func goBack() tea.Msg {

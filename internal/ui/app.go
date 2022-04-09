@@ -21,6 +21,10 @@ type hashPage struct{}
 
 func (hashPage) crumb() string { return menuPageHashMenu }
 
+type colorPage struct{}
+
+func (colorPage) crumb() string { return menuPageColorMenu }
+
 type pageStack struct {
 	stack []page
 }
@@ -60,9 +64,10 @@ func (s *pageStack) currentPage() page {
 type model struct {
 	*pageStack
 
-	menuPage menuPageModel
-	uuidPage uuidPageModel
-	hashPage hashPageModel
+	menuPage  menuPageModel
+	uuidPage  uuidPageModel
+	hashPage  hashPageModel
+	colorPage colorPageModel
 
 	width, height int
 }
@@ -75,6 +80,7 @@ func newModel() model {
 		menuPage:  newMenuPageModel(),
 		uuidPage:  newUuidPageModel(),
 		hashPage:  newHashPageModel(),
+		colorPage: newColorPageModel(),
 	}
 }
 
@@ -83,6 +89,7 @@ func (m *model) setSize(w, h int) {
 	m.menuPage.setSize(w, h)
 	m.uuidPage.setSize(w, h)
 	m.hashPage.setSize(w, h)
+	m.colorPage.setSize(w, h)
 }
 
 func (m model) Init() tea.Cmd {
@@ -103,6 +110,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.pushPage(uuidPage{})
 	case selectHashMenuMsg:
 		m.pushPage(hashPage{})
+	case selectColorMenuMsg:
+		m.pushPage(colorPage{})
 	case goBackMsg:
 		m.popPage()
 	case redrawMsg:
@@ -117,6 +126,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	case hashPage:
 		m.hashPage, cmd = m.hashPage.Update(msg)
+		return m, cmd
+	case colorPage:
+		m.colorPage, cmd = m.colorPage.Update(msg)
 		return m, cmd
 	default:
 		return m, nil
@@ -135,6 +147,8 @@ func (m model) content() string {
 		return m.uuidPage.View()
 	case hashPage:
 		return m.hashPage.View()
+	case colorPage:
+		return m.colorPage.View()
 	default:
 		return "error... :("
 	}

@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	menuPageUuidMenu = "UUID"
-	menuPageHashMenu = "Hash"
+	menuPageUuidMenu  = "UUID"
+	menuPageHashMenu  = "Hash"
+	menuPageColorMenu = "Color"
 )
 
 var menuPageItems = []list.Item{
@@ -19,6 +20,10 @@ var menuPageItems = []list.Item{
 	menuPageListItem{
 		title:       menuPageHashMenu,
 		description: "calculate hash",
+	},
+	menuPageListItem{
+		title:       menuPageColorMenu,
+		description: "select terminal 256 color",
 	},
 }
 
@@ -70,6 +75,8 @@ func (m menuPageModel) Update(msg tea.Msg) (menuPageModel, tea.Cmd) {
 				return m, selectUuidMenu
 			case menuPageHashMenu:
 				return m, selectHashMenu
+			case menuPageColorMenu:
+				return m, selectColorMenu
 			}
 			return m, nil
 		}
