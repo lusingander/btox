@@ -209,9 +209,7 @@ func (m colorPageModel) Update(msg tea.Msg) (colorPageModel, tea.Cmd) {
 			}
 			return m, nil
 		case key.Matches(msg, m.delegateKeys.back):
-			if m.selected != colorPageSelectableInput {
-				return m, goBack
-			}
+			return m, goBack
 		case key.Matches(msg, m.delegateKeys.tab):
 			m.selectItem(false)
 			return m, nil
@@ -240,12 +238,27 @@ func (m colorPageModel) Update(msg tea.Msg) (colorPageModel, tea.Cmd) {
 	}
 	var cmd tea.Cmd
 	if m.selected == colorPageSelectableInput {
-		m.colorInput, cmd = m.colorInput.Update(msg)
-		return m, cmd
+		if key, ok := msg.(tea.KeyMsg); ok {
+			if m.acceptableInput(key.String()) {
+				m.colorInput, cmd = m.colorInput.Update(msg)
+				return m, cmd
+			}
+		}
 	} else {
 		m.listView, cmd = m.listView.Update(msg)
 		return m, cmd
 	}
+	return m, nil
+}
+
+func (colorPageModel) acceptableInput(s string) bool {
+	tt := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "ctrl+w"}
+	for _, t := range tt {
+		if s == t {
+			return true
+		}
+	}
+	return false
 }
 
 func (m colorPageModel) View() string {
