@@ -4,6 +4,11 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	menuPageStyle = lipgloss.NewStyle().Margin(1, 1)
 )
 
 const (
@@ -38,6 +43,12 @@ func newMenuPageModel() menuPageModel {
 	m.delegateKeys = newMenuPageDelegateKeyMap()
 	delegate := newMenuPageListDelegate()
 	m.list = list.New(menuPageItems, delegate, 0, 0)
+	m.list.SetShowTitle(false)
+	m.list.SetShowHelp(false)
+	m.list.SetShowStatusBar(false)
+	m.list.SetShowFilter(false)
+	m.list.SetShowPagination(false)
+	m.list.SetFilteringEnabled(false)
 	m.list.KeyMap.Quit.Unbind()
 	return m
 }
@@ -57,7 +68,8 @@ func newMenuPageDelegateKeyMap() menuPageDelegateKeyMap {
 
 func (m *menuPageModel) setSize(w, h int) {
 	m.width, m.height = w, h
-	m.list.SetSize(w, h)
+	t, _, b, _ := menuPageStyle.GetMargin()
+	m.list.SetSize(w, h-t-b)
 }
 
 func (m menuPageModel) Init() tea.Cmd {
@@ -87,5 +99,5 @@ func (m menuPageModel) Update(msg tea.Msg) (menuPageModel, tea.Cmd) {
 }
 
 func (m menuPageModel) View() string {
-	return m.list.View()
+	return menuPageStyle.Render(m.list.View())
 }

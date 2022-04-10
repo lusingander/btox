@@ -1,8 +1,17 @@
 package ui
 
 import (
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/lusingander/btox/internal/app"
+)
+
+var (
+	headerStyle = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("39")).
+		Padding(0, 1)
 )
 
 type page interface {
@@ -86,6 +95,7 @@ func newModel() model {
 
 func (m *model) setSize(w, h int) {
 	m.width, m.height = w, h
+	h = h - 1
 	m.menuPage.setSize(w, h)
 	m.uuidPage.setSize(w, h)
 	m.hashPage.setSize(w, h)
@@ -136,7 +146,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return m.content()
+	return lipgloss.JoinVertical(0, m.header(), m.content())
+}
+
+func (m model) header() string {
+	bd := strings.Join(m.crumbs(), " > ")
+	return headerStyle.Render(bd)
 }
 
 func (m model) content() string {
