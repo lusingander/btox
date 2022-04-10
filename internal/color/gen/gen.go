@@ -22,6 +22,9 @@ var Cols = []Color{
 	{
 		ID: {{ .ColorId }},
 		Hex: "{{ .HexString | ToUpper }}",
+		R: {{ .Rgb.R }},
+		G: {{ .Rgb.G }},
+		B: {{ .Rgb.B }},
 	},
 {{- end }}
 }

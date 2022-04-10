@@ -9,6 +9,48 @@ import (
 type Color struct {
 	ID  int
 	Hex string
+	R   int
+	G   int
+	B   int
+}
+
+func (c Color) Name16() string {
+	switch c.ID {
+	case 0:
+		return "Black"
+	case 1:
+		return "Red"
+	case 2:
+		return "Green"
+	case 3:
+		return "Yellow"
+	case 4:
+		return "Blue"
+	case 5:
+		return "Purple"
+	case 6:
+		return "Cyan"
+	case 7:
+		return "White"
+	case 8:
+		return "Black (Bright)"
+	case 9:
+		return "Red (Bright)"
+	case 10:
+		return "Green (Bright)"
+	case 11:
+		return "Yellow (Bright)"
+	case 12:
+		return "Blue (Bright)"
+	case 13:
+		return "Purple (Bright)"
+	case 14:
+		return "Cyan (Bright)"
+	case 15:
+		return "White (Bright)"
+	default:
+		return ""
+	}
 }
 
 type Distance int

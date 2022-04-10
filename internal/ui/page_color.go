@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -52,14 +52,19 @@ const (
 )
 
 func colorPageColorListContent(cols []color.Color) string {
-	var buf bytes.Buffer
+	var b strings.Builder
 	for _, col := range cols {
 		rect := lipgloss.NewStyle().
 			Width(6).
 			Background(lipgloss.Color(strconv.Itoa(col.ID)))
-		buf.WriteString(fmt.Sprintf(" %3d  %s  %s\n", col.ID, rect, col.Hex))
+		if 0 <= col.ID && col.ID <= 15 {
+			b.WriteString(fmt.Sprintf(" %3d  %s  %s\n", col.ID, rect, col.Name16()))
+		} else {
+			rgb := fmt.Sprintf("RGB(%3d, %3d, %3d)", col.R, col.G, col.B)
+			b.WriteString(fmt.Sprintf(" %3d  %s  %s  %s\n", col.ID, rect, col.Hex, rgb))
+		}
 	}
-	return buf.String()
+	return b.String()
 }
 
 func newColorPageModel() colorPageModel {
