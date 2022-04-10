@@ -1,6 +1,11 @@
 package ui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	selectedColor = lipgloss.Color("117")
@@ -38,4 +43,38 @@ var (
 
 	listSelectedDescStyle = listSelectedItemStyle.Copy().
 				Foreground(selectedColor)
+
+	itemStyle = lipgloss.NewStyle().
+			Padding(1, 2)
+
+	selectedItemColorStyle = lipgloss.NewStyle().
+				Foreground(selectedColor).
+				Bold(true)
+
+	disabledItemColorStyle = lipgloss.NewStyle().
+				Foreground(disabledColor)
 )
+
+func selectView(s string, selected, first, last bool) string {
+	l := "<"
+	r := ">"
+	if first {
+		l = disabledItemColorStyle.Render(l)
+	} else if selected {
+		l = selectedItemColorStyle.Render(l)
+	}
+	if last {
+		r = disabledItemColorStyle.Render(r)
+	} else if selected {
+		r = selectedItemColorStyle.Render(r)
+	}
+	if selected {
+		s = selectedItemColorStyle.Render(s)
+	}
+	return fmt.Sprintf("%s %s %s", l, s, r)
+}
+
+func separetorView(w int) string {
+	sep := strings.Repeat("-", w)
+	return disabledItemColorStyle.Render(sep)
+}

@@ -13,18 +13,6 @@ import (
 	"github.com/muesli/termenv"
 )
 
-var (
-	uuidPageItemStyle = lipgloss.NewStyle().
-				Padding(1, 2)
-
-	uuidPageSelectedItemColorStyle = lipgloss.NewStyle().
-					Foreground(selectedColor).
-					Bold(true)
-
-	uuidPageDisabledItemColorStyle = lipgloss.NewStyle().
-					Foreground(disabledColor)
-)
-
 const (
 	uuidPageCountMin = 1
 	uuidPageCountMax = 100
@@ -128,7 +116,7 @@ func (m *uuidPageModel) setSize(w, h int) {
 	m.width, m.height = w, h
 
 	m.idView.Width = w
-	m.idView.Height = h - lipgloss.Height(m.menuView()) - lipgloss.Height(m.separetorView()) - 1
+	m.idView.Height = h - lipgloss.Height(m.menuView()) - lipgloss.Height(separetorView(m.width)) - 1
 }
 
 func (m *uuidPageModel) reset() {
@@ -289,7 +277,7 @@ func (m uuidPageModel) Update(msg tea.Msg) (uuidPageModel, tea.Cmd) {
 
 func (m uuidPageModel) View() string {
 	menu := m.menuView()
-	sep := m.separetorView()
+	sep := separetorView(m.width)
 	return lipgloss.JoinVertical(0, menu, sep, m.idView.View())
 }
 
@@ -313,40 +301,16 @@ func (m uuidPageModel) menuView() string {
 	}
 	count := fmt.Sprintf("     %3d    ", m.count)
 
-	s += uuidPageItemStyle.Render(m.withStyle(dash, m.selected == uuidPageSelectableDash, false, false))
-	s += uuidPageItemStyle.Render(m.withStyle(upper, m.selected == uuidPageSelectableUpper, false, false))
-	s += uuidPageItemStyle.Render(m.withStyle(version, m.selected == uuidPageSelectableVersion, true, true))
-	s += uuidPageItemStyle.Render(m.withStyle(count, m.selected == uuidPageSelectableCount, m.count <= uuidPageCountMin, m.count >= uuidPageCountMax))
+	s += itemStyle.Render(selectView(dash, m.selected == uuidPageSelectableDash, false, false))
+	s += itemStyle.Render(selectView(upper, m.selected == uuidPageSelectableUpper, false, false))
+	s += itemStyle.Render(selectView(version, m.selected == uuidPageSelectableVersion, true, true))
+	s += itemStyle.Render(selectView(count, m.selected == uuidPageSelectableCount, m.count <= uuidPageCountMin, m.count >= uuidPageCountMax))
 
 	generate := "    Generate    "
 	if m.selected == uuidPageSelectableGenerate {
-		generate = uuidPageSelectedItemColorStyle.Render(generate)
+		generate = selectedItemColorStyle.Render(generate)
 	}
-	s += uuidPageItemStyle.Render(generate)
+	s += itemStyle.Render(generate)
 
 	return s
-}
-
-func (m uuidPageModel) separetorView() string {
-	sep := strings.Repeat("-", m.width)
-	return uuidPageDisabledItemColorStyle.Render(sep)
-}
-
-func (uuidPageModel) withStyle(s string, selected, first, last bool) string {
-	l := "<"
-	r := ">"
-	if first {
-		l = uuidPageDisabledItemColorStyle.Render(l)
-	} else if selected {
-		l = uuidPageSelectedItemColorStyle.Render(l)
-	}
-	if last {
-		r = uuidPageDisabledItemColorStyle.Render(r)
-	} else if selected {
-		r = uuidPageSelectedItemColorStyle.Render(r)
-	}
-	if selected {
-		s = uuidPageSelectedItemColorStyle.Render(s)
-	}
-	return fmt.Sprintf("%s %s %s", l, s, r)
 }

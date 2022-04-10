@@ -1,9 +1,6 @@
 package ui
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,18 +8,6 @@ import (
 	"github.com/lusingander/btox/internal/app"
 	"github.com/lusingander/btox/internal/hash"
 	"github.com/muesli/reflow/wrap"
-)
-
-var (
-	hashPageItemStyle = lipgloss.NewStyle().
-				Padding(1, 2)
-
-	hashPageSelectedItemColorStyle = lipgloss.NewStyle().
-					Foreground(selectedColor).
-					Bold(true)
-
-	hashPageDisabledItemColorStyle = lipgloss.NewStyle().
-					Foreground(disabledColor)
 )
 
 type hashPageModel struct {
@@ -104,7 +89,7 @@ func (m *hashPageModel) setSize(w, h int) {
 	m.outputView.Width = w
 	m.outputView.Height = 2
 
-	hh := h - lipgloss.Height(m.menuView()) - (lipgloss.Height(m.separetorView()) * 2) - 2
+	hh := h - lipgloss.Height(m.menuView()) - (lipgloss.Height(separetorView(m.width)) * 2) - 2
 	m.inputView.Width = w
 	m.inputView.Height = hh - 1
 }
@@ -211,7 +196,7 @@ func (m hashPageModel) Update(msg tea.Msg) (hashPageModel, tea.Cmd) {
 
 func (m hashPageModel) View() string {
 	menu := m.menuView()
-	sep := m.separetorView()
+	sep := separetorView(m.width)
 	in := m.inputView.View()
 	out := m.outputView.View()
 	return lipgloss.JoinVertical(0, menu, sep, in, sep, out)
@@ -240,31 +225,7 @@ func (m hashPageModel) menuView() string {
 		algo = "   SHA-512   "
 	}
 
-	s += hashPageItemStyle.Render(m.withStyle(algo, m.selected == hashPageSelectableAlgorithm, false, false))
+	s += itemStyle.Render(selectView(algo, m.selected == hashPageSelectableAlgorithm, false, false))
 
 	return s
-}
-
-func (m hashPageModel) separetorView() string {
-	sep := strings.Repeat("-", m.width)
-	return hashPageDisabledItemColorStyle.Render(sep)
-}
-
-func (hashPageModel) withStyle(s string, selected, first, last bool) string {
-	l := "<"
-	r := ">"
-	if first {
-		l = hashPageDisabledItemColorStyle.Render(l)
-	} else if selected {
-		l = hashPageSelectedItemColorStyle.Render(l)
-	}
-	if last {
-		r = hashPageDisabledItemColorStyle.Render(r)
-	} else if selected {
-		r = hashPageSelectedItemColorStyle.Render(r)
-	}
-	if selected {
-		s = hashPageSelectedItemColorStyle.Render(s)
-	}
-	return fmt.Sprintf("%s %s %s", l, s, r)
 }

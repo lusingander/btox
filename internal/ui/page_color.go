@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -12,18 +11,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/lusingander/btox/internal/color"
-)
-
-var (
-	colorPageItemStyle = lipgloss.NewStyle().
-				Padding(1, 2)
-
-	colorPageSelectedItemColorStyle = lipgloss.NewStyle().
-					Foreground(selectedColor).
-					Bold(true)
-
-	colorPageDisabledItemColorStyle = lipgloss.NewStyle().
-					Foreground(disabledColor)
 )
 
 const (
@@ -82,7 +69,7 @@ func newColorPageModel() colorPageModel {
 	m.colorInput.CharLimit = 6
 	m.colorInput.Placeholder = "000000"
 	m.colorInput.Prompt = ">  "
-	m.colorInput.PromptStyle = colorPageSelectedItemColorStyle
+	m.colorInput.PromptStyle = selectedItemColorStyle
 	m.delegateKeys = newColorPageDelegateKeyMap()
 	m.reset()
 	return m
@@ -133,7 +120,7 @@ func (m *colorPageModel) setSize(w, h int) {
 	m.width, m.height = w, h
 
 	m.listView.Width = w
-	m.listView.Height = h - lipgloss.Height(m.menuView()) - lipgloss.Height(m.separetorView()) - 1
+	m.listView.Height = h - lipgloss.Height(m.menuView()) - lipgloss.Height(separetorView(m.width)) - 1
 }
 
 func (m *colorPageModel) reset() {
@@ -155,7 +142,7 @@ func (m *colorPageModel) selectItem(reverse bool) {
 	}
 	if m.selected == colorPageSelectableInput {
 		m.colorInput.Focus()
-		m.colorInput.PromptStyle = colorPageSelectedItemColorStyle
+		m.colorInput.PromptStyle = selectedItemColorStyle
 	} else {
 		m.colorInput.Blur()
 		m.colorInput.PromptStyle = lipgloss.Style{}
@@ -263,7 +250,7 @@ func (m colorPageModel) Update(msg tea.Msg) (colorPageModel, tea.Cmd) {
 
 func (m colorPageModel) View() string {
 	menu := m.menuView()
-	sep := m.separetorView()
+	sep := separetorView(m.width)
 	return lipgloss.JoinVertical(0, menu, sep, m.listView.View())
 }
 
@@ -272,7 +259,7 @@ func (m colorPageModel) menuView() string {
 
 	input := ""
 	input += m.colorInput.View()
-	s += colorPageItemStyle.Render(input)
+	s += itemStyle.Render(input)
 
 	var dist string
 	switch m.dist {
@@ -285,40 +272,16 @@ func (m colorPageModel) menuView() string {
 	case colorDistanceCIEDE2000:
 		dist = " CIEDE2000 "
 	}
-	s += colorPageItemStyle.Render(m.withStyle(dist, m.selected == colorPageSelectableDistance, false, false))
+	s += itemStyle.Render(selectView(dist, m.selected == colorPageSelectableDistance, false, false))
 
 	count := fmt.Sprintf("     %2d    ", m.count)
-	s += colorPageItemStyle.Render(m.withStyle(count, m.selected == colorPageSelectableCount, m.count <= colorPageCountMin, m.count >= colorPageCountMax))
+	s += itemStyle.Render(selectView(count, m.selected == colorPageSelectableCount, m.count <= colorPageCountMin, m.count >= colorPageCountMax))
 
 	filter := "     Filter    "
 	if m.selected == colorPageSelectableFilter {
-		filter = colorPageSelectedItemColorStyle.Render(filter)
+		filter = selectedItemColorStyle.Render(filter)
 	}
-	s += colorPageItemStyle.Render(filter)
+	s += itemStyle.Render(filter)
 
 	return s
-}
-
-func (m colorPageModel) separetorView() string {
-	sep := strings.Repeat("-", m.width)
-	return colorPageDisabledItemColorStyle.Render(sep)
-}
-
-func (colorPageModel) withStyle(s string, selected, first, last bool) string {
-	l := "<"
-	r := ">"
-	if first {
-		l = colorPageDisabledItemColorStyle.Render(l)
-	} else if selected {
-		l = colorPageSelectedItemColorStyle.Render(l)
-	}
-	if last {
-		r = colorPageDisabledItemColorStyle.Render(r)
-	} else if selected {
-		r = colorPageSelectedItemColorStyle.Render(r)
-	}
-	if selected {
-		s = colorPageSelectedItemColorStyle.Render(s)
-	}
-	return fmt.Sprintf("%s %s %s", l, s, r)
 }
