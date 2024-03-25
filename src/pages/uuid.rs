@@ -6,15 +6,15 @@ use ratatui::{
 
 use crate::{msg::Msg, pages::page::Page};
 
-pub struct BarPage {}
+pub struct UuidPage {}
 
-impl BarPage {
-    pub fn new() -> BarPage {
-        BarPage {}
+impl UuidPage {
+    pub fn new() -> UuidPage {
+        UuidPage {}
     }
 }
 
-impl Page for BarPage {
+impl Page for UuidPage {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
         let _ = key;
         None
@@ -25,7 +25,7 @@ impl Page for BarPage {
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
-        let content = Paragraph::new("bar page");
+        let content = Paragraph::new("uuid page");
         content.render(area, buf);
     }
 }

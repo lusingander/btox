@@ -7,7 +7,7 @@ use ratatui::{
 
 use crate::{
     msg::Msg,
-    pages::{bar::BarPage, foo::FooPage, page::Page},
+    pages::{bar::BarPage, foo::FooPage, page::Page, uuid::UuidPage},
     panes::pane::Pane,
 };
 
@@ -19,7 +19,7 @@ pub struct ToolPane {
 impl ToolPane {
     pub fn new(focused: bool) -> ToolPane {
         ToolPane {
-            page: Box::new(FooPage::new()),
+            page: Box::new(UuidPage::new()),
             focused,
         }
     }
@@ -33,6 +33,9 @@ impl Pane for ToolPane {
 
     fn update(&mut self, msg: Msg) -> Option<Msg> {
         match msg {
+            Msg::ToolPaneSelectUuidPage => {
+                self.page = Box::new(UuidPage::new());
+            }
             Msg::ToolPaneSelectFooPage => {
                 self.page = Box::new(FooPage::new());
             }
@@ -46,9 +49,9 @@ impl Pane for ToolPane {
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
         let (border_type, block_style) = if self.focused {
-            (BorderType::Plain, Style::default().fg(Color::Blue))
+            (BorderType::Rounded, Style::default().fg(Color::Blue))
         } else {
-            (BorderType::Plain, Style::default().fg(Color::DarkGray))
+            (BorderType::Rounded, Style::default().fg(Color::DarkGray))
         };
         let page_block = Block::default()
             .borders(Borders::ALL)
@@ -57,7 +60,7 @@ impl Pane for ToolPane {
 
         page_block.render(area, buf);
 
-        let page_content_area = area.inner(&Margin::new(1, 1));
+        let page_content_area = area.inner(&Margin::new(2, 1));
         self.page.render(buf, page_content_area);
     }
 

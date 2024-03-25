@@ -10,8 +10,27 @@ use crate::{key_code_char, msg::Msg, panes::pane::Pane};
 
 #[derive(Debug, Clone, Copy)]
 enum PageType {
-    Foo = 0,
+    Uuid = 0,
+    Foo,
     Bar,
+}
+
+impl PageType {
+    fn next(&self) -> (PageType, Msg) {
+        match self {
+            PageType::Uuid => (PageType::Foo, Msg::ToolPaneSelectFooPage),
+            PageType::Foo => (PageType::Bar, Msg::ToolPaneSelectBarPage),
+            PageType::Bar => (PageType::Uuid, Msg::ToolPaneSelectUuidPage),
+        }
+    }
+
+    fn prev(&self) -> (PageType, Msg) {
+        match self {
+            PageType::Uuid => (PageType::Bar, Msg::ToolPaneSelectBarPage),
+            PageType::Foo => (PageType::Uuid, Msg::ToolPaneSelectUuidPage),
+            PageType::Bar => (PageType::Foo, Msg::ToolPaneSelectFooPage),
+        }
+    }
 }
 
 pub struct ListPane {
@@ -22,7 +41,7 @@ pub struct ListPane {
 impl ListPane {
     pub fn new(focused: bool) -> ListPane {
         ListPane {
-            selected: PageType::Foo,
+            selected: PageType::Uuid,
             focused,
         }
     }
@@ -39,23 +58,23 @@ impl Pane for ListPane {
 
     fn update(&mut self, msg: Msg) -> Option<Msg> {
         match msg {
-            Msg::ListPaneSelectNext | Msg::ListPaneSelectPrev => match self.selected {
-                PageType::Foo => {
-                    self.selected = PageType::Bar;
-                    return Some(Msg::ToolPaneSelectBarPage);
-                }
-                PageType::Bar => {
-                    self.selected = PageType::Foo;
-                    return Some(Msg::ToolPaneSelectFooPage);
-                }
-            },
+            Msg::ListPaneSelectNext => {
+                let (s, m) = self.selected.next();
+                self.selected = s;
+                return Some(m);
+            }
+            Msg::ListPaneSelectPrev => {
+                let (s, m) = self.selected.prev();
+                self.selected = s;
+                return Some(m);
+            }
             _ => {}
         }
         None
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
-        let items = vec!["foo", "bar"]
+        let items = vec!["uuid", "foo", "bar"]
             .into_iter()
             .enumerate()
             .map(|(i, label)| {
@@ -73,9 +92,9 @@ impl Pane for ListPane {
             });
 
         let (border_type, block_style) = if self.focused {
-            (BorderType::Plain, Style::default().fg(Color::Blue))
+            (BorderType::Rounded, Style::default().fg(Color::Blue))
         } else {
-            (BorderType::Plain, Style::default().fg(Color::DarkGray))
+            (BorderType::Rounded, Style::default().fg(Color::DarkGray))
         };
         let list = List::new(items).block(
             Block::default()

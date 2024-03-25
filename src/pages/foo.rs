@@ -4,7 +4,7 @@ use ratatui::{
     widgets::{Paragraph, Widget},
 };
 
-use crate::pages::page::Page;
+use crate::{msg::Msg, pages::page::Page};
 
 pub struct FooPage {}
 
@@ -15,8 +15,13 @@ impl FooPage {
 }
 
 impl Page for FooPage {
-    fn update(&mut self) {
-        todo!()
+    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+        let _ = key;
+        None
+    }
+
+    fn update(&mut self, msg: Msg) {
+        let _ = msg;
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {

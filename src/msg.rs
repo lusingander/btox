@@ -6,6 +6,7 @@ pub enum Msg {
     ListPaneSelectNext,
     ListPaneSelectPrev,
 
+    ToolPaneSelectUuidPage,
     ToolPaneSelectFooPage,
     ToolPaneSelectBarPage,
 }
