@@ -1,6 +1,9 @@
 mod app;
 mod event;
 mod macros;
+mod msg;
+mod pages;
+mod panes;
 
 use std::{
     io::{stdout, Stdout},
