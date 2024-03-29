@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 crossterm = "0.27.0"
 ratatui = { version = "0.26.1", features = ["all-widgets"] }
+
+# fixme: not yet published to crates.io
+itsuki = { git = "https://github.com/lusingander/itsuki", version = "0.1.0" }

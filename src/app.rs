@@ -1,6 +1,7 @@
 use std::sync::mpsc;
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
@@ -13,10 +14,11 @@ use crate::{
     panes::{list::ListPane, pane::Pane, tool::ToolPane},
 };
 
-#[derive(Debug, Clone, Copy)]
-enum PaneType {
-    List,
-    Tool,
+zero_indexed_enum! {
+    PaneType => [
+        List,
+        Tool,
+    ]
 }
 
 pub struct App {

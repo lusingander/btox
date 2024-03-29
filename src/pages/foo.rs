@@ -6,11 +6,13 @@ use ratatui::{
 
 use crate::{msg::Msg, pages::page::Page};
 
-pub struct FooPage {}
+pub struct FooPage {
+    focused: bool,
+}
 
 impl FooPage {
-    pub fn new() -> FooPage {
-        FooPage {}
+    pub fn new(focused: bool) -> FooPage {
+        FooPage { focused }
     }
 }
 
@@ -20,12 +22,21 @@ impl Page for FooPage {
         None
     }
 
-    fn update(&mut self, msg: Msg) {
+    fn update(&mut self, msg: Msg) -> Option<Msg> {
         let _ = msg;
+        None
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
         let content = Paragraph::new("foo page");
         content.render(area, buf);
+    }
+
+    fn focus(&mut self) {
+        self.focused = true;
+    }
+
+    fn unfocus(&mut self) {
+        self.focused = false;
     }
 }

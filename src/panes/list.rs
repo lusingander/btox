@@ -1,4 +1,5 @@
 use crossterm::event::{KeyCode, KeyEvent};
+use itsuki::zero_indexed_enum;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -8,27 +9,20 @@ use ratatui::{
 
 use crate::{key_code_char, msg::Msg, panes::pane::Pane};
 
-#[derive(Debug, Clone, Copy)]
-enum PageType {
-    Uuid = 0,
-    Foo,
-    Bar,
+zero_indexed_enum! {
+    PageType => [
+        Uuid,
+        Foo,
+        Bar,
+    ]
 }
 
 impl PageType {
-    fn next(&self) -> (PageType, Msg) {
+    fn select_msg(&self) -> Msg {
         match self {
-            PageType::Uuid => (PageType::Foo, Msg::ToolPaneSelectFooPage),
-            PageType::Foo => (PageType::Bar, Msg::ToolPaneSelectBarPage),
-            PageType::Bar => (PageType::Uuid, Msg::ToolPaneSelectUuidPage),
-        }
-    }
-
-    fn prev(&self) -> (PageType, Msg) {
-        match self {
-            PageType::Uuid => (PageType::Bar, Msg::ToolPaneSelectBarPage),
-            PageType::Foo => (PageType::Uuid, Msg::ToolPaneSelectUuidPage),
-            PageType::Bar => (PageType::Foo, Msg::ToolPaneSelectFooPage),
+            PageType::Uuid => Msg::ToolPaneSelectUuidPage,
+            PageType::Foo => Msg::ToolPaneSelectFooPage,
+            PageType::Bar => Msg::ToolPaneSelectBarPage,
         }
     }
 }
@@ -59,14 +53,12 @@ impl Pane for ListPane {
     fn update(&mut self, msg: Msg) -> Option<Msg> {
         match msg {
             Msg::ListPaneSelectNext => {
-                let (s, m) = self.selected.next();
-                self.selected = s;
-                return Some(m);
+                self.selected = self.selected.next();
+                return Some(self.selected.select_msg());
             }
             Msg::ListPaneSelectPrev => {
-                let (s, m) = self.selected.prev();
-                self.selected = s;
-                return Some(m);
+                self.selected = self.selected.prev();
+                return Some(self.selected.select_msg());
             }
             _ => {}
         }

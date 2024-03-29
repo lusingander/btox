@@ -9,4 +9,9 @@ pub enum Msg {
     ToolPaneSelectUuidPage,
     ToolPaneSelectFooPage,
     ToolPaneSelectBarPage,
+
+    UuidPageSelectNextItem,
+    UuidPageSelectPrevItem,
+    UuidPageCurrentItemSelectNext,
+    UuidPageCurrentItemSelectPrev,
 }

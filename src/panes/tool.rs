@@ -19,7 +19,7 @@ pub struct ToolPane {
 impl ToolPane {
     pub fn new(focused: bool) -> ToolPane {
         ToolPane {
-            page: Box::new(UuidPage::new()),
+            page: Box::new(UuidPage::new(focused)),
             focused,
         }
     }
@@ -27,22 +27,23 @@ impl ToolPane {
 
 impl Pane for ToolPane {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
-        let _ = key;
-        None
+        self.page.handle_key(key)
     }
 
     fn update(&mut self, msg: Msg) -> Option<Msg> {
         match msg {
             Msg::ToolPaneSelectUuidPage => {
-                self.page = Box::new(UuidPage::new());
+                self.page = Box::new(UuidPage::new(self.focused));
             }
             Msg::ToolPaneSelectFooPage => {
-                self.page = Box::new(FooPage::new());
+                self.page = Box::new(FooPage::new(self.focused));
             }
             Msg::ToolPaneSelectBarPage => {
-                self.page = Box::new(BarPage::new());
+                self.page = Box::new(BarPage::new(self.focused));
             }
-            _ => {}
+            _ => {
+                return self.page.update(msg);
+            }
         }
         None
     }
@@ -66,9 +67,11 @@ impl Pane for ToolPane {
 
     fn focus(&mut self) {
         self.focused = true;
+        self.page.focus();
     }
 
     fn unfocus(&mut self) {
         self.focused = false;
+        self.page.unfocus();
     }
 }
