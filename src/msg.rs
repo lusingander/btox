@@ -15,4 +15,6 @@ pub enum Msg {
     UuidPageCurrentItemSelectNext,
     UuidPageCurrentItemSelectPrev,
     UuidPageGenerate,
+    UuidPageCopy,
+    UuidPagePaste,
 }

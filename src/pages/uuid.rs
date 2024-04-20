@@ -1,3 +1,4 @@
+use arboard::Clipboard;
 use crossterm::event::{KeyCode, KeyEvent};
 use itsuki::zero_indexed_enum;
 use ratatui::{
@@ -105,6 +106,8 @@ impl Page for UuidPage {
             key_code_char!('k') => Some(Msg::UuidPageSelectPrevItem),
             key_code_char!('l') => Some(Msg::UuidPageCurrentItemSelectNext),
             key_code_char!('h') => Some(Msg::UuidPageCurrentItemSelectPrev),
+            key_code_char!('y') => Some(Msg::UuidPageCopy),
+            key_code_char!('p') => Some(Msg::UuidPagePaste),
             key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
             _ => None,
         }
@@ -165,7 +168,13 @@ impl Page for UuidPage {
                 PageItems::Output => {}
             },
             Msg::UuidPageGenerate => {
-                self.ids = (0..self.cur.count).map(|_| Uuid::new_v4()).collect();
+                self.generate_uuid();
+            }
+            Msg::UuidPageCopy => {
+                self.copy_to_clipboard();
+            }
+            Msg::UuidPagePaste => {
+                self.paste_from_clipboard();
             }
             _ => {}
         }
@@ -243,6 +252,27 @@ impl Page for UuidPage {
 }
 
 impl UuidPage {
+    fn generate_uuid(&mut self) {
+        self.ids = (0..self.cur.count).map(|_| Uuid::new_v4()).collect();
+    }
+
+    fn copy_to_clipboard(&self) {
+        let ids: Vec<String> = self.ids.iter().map(|id| self.format_uuid(id)).collect();
+        let text = ids.join("\n");
+        Clipboard::new().and_then(|mut c| c.set_text(text)).unwrap();
+    }
+
+    fn paste_from_clipboard(&mut self) {
+        let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
+        let mut ids: Vec<Uuid> = Vec::new();
+        for s in text.split_whitespace() {
+            if let Ok(id) = Uuid::parse_str(s) {
+                ids.push(id);
+            }
+        }
+        self.ids = ids;
+    }
+
     fn format_uuid(&self, id: &Uuid) -> String {
         let mut buf = Uuid::encode_buffer();
         let s = match (self.cur.dash_sel, self.cur.case_sel) {
