@@ -10,4 +10,6 @@ pub trait Page {
 
     fn focus(&mut self);
     fn unfocus(&mut self);
+
+    fn helps(&self) -> Vec<&str>;
 }

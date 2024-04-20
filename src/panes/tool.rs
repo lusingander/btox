@@ -1,19 +1,22 @@
 use ratatui::{
     buffer::Buffer,
-    layout::{Margin, Rect},
+    layout::{Constraint, Layout, Margin, Rect},
     style::{Color, Style},
-    widgets::{Block, BorderType, Borders, Widget},
+    text::Line,
+    widgets::{Block, BorderType, Borders, Paragraph, Widget},
 };
 
 use crate::{
     msg::Msg,
     pages::{bar::BarPage, foo::FooPage, page::Page, uuid::UuidPage},
     panes::pane::Pane,
+    util::group_strs_to_fit_width,
 };
 
 pub struct ToolPane {
     page: Box<dyn Page>,
     focused: bool,
+    help: bool,
 }
 
 impl ToolPane {
@@ -21,6 +24,7 @@ impl ToolPane {
         ToolPane {
             page: Box::new(UuidPage::new(focused)),
             focused,
+            help: false,
         }
     }
 }
@@ -41,6 +45,9 @@ impl Pane for ToolPane {
             Msg::ToolPaneSelectBarPage => {
                 self.page = Box::new(BarPage::new(self.focused));
             }
+            Msg::ToggleHelp => {
+                self.help = !self.help;
+            }
             _ => {
                 return self.page.update(msg);
             }
@@ -49,6 +56,14 @@ impl Pane for ToolPane {
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
+        let help_lines = self.help_lines(area.width - 2);
+
+        let chunks = Layout::vertical([
+            Constraint::Min(0),
+            Constraint::Length(help_lines.len() as u16),
+        ])
+        .split(area);
+
         let (border_type, block_style) = if self.focused {
             (BorderType::Rounded, Style::default().fg(Color::Blue))
         } else {
@@ -59,10 +74,16 @@ impl Pane for ToolPane {
             .border_type(border_type)
             .style(block_style);
 
-        page_block.render(area, buf);
+        page_block.render(chunks[0], buf);
 
-        let page_content_area = area.inner(&Margin::new(2, 1));
+        let page_content_area = chunks[0].inner(&Margin::new(2, 1));
         self.page.render(buf, page_content_area);
+
+        if self.help {
+            let help_area = chunks[1].inner(&Margin::new(1, 0));
+            let help = Paragraph::new(help_lines);
+            help.render(help_area, buf);
+        }
     }
 
     fn focus(&mut self) {
@@ -73,5 +94,22 @@ impl Pane for ToolPane {
     fn unfocus(&mut self) {
         self.focused = false;
         self.page.unfocus();
+    }
+}
+
+impl ToolPane {
+    fn help_lines(&self, width: u16) -> Vec<Line> {
+        if self.help {
+            let delimiter = ", ";
+            group_strs_to_fit_width(&self.page.helps(), width as usize, delimiter)
+                .iter()
+                .map(|helps| {
+                    Line::styled(helps.join(delimiter), Style::default().fg(Color::DarkGray))
+                })
+                .chain([Line::raw("")])
+                .collect()
+        } else {
+            Vec::new()
+        }
     }
 }

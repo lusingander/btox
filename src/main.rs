@@ -4,6 +4,7 @@ mod macros;
 mod msg;
 mod pages;
 mod panes;
+mod util;
 mod widget;
 
 use std::{

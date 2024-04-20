@@ -39,4 +39,8 @@ impl Page for BarPage {
     fn unfocus(&mut self) {
         self.focused = false;
     }
+
+    fn helps(&self) -> Vec<&str> {
+        vec!["bar help"]
+    }
 }

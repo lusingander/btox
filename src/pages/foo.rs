@@ -39,4 +39,8 @@ impl Page for FooPage {
     fn unfocus(&mut self) {
         self.focused = false;
     }
+
+    fn helps(&self) -> Vec<&str> {
+        vec!["foo help"]
+    }
 }

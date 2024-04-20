@@ -1,6 +1,6 @@
 use std::sync::mpsc;
 
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{Event, KeyCode};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
@@ -64,6 +64,7 @@ impl App {
         match key {
             key_code!(KeyCode::Esc) | key_code_char!('c', Ctrl) => Some(Msg::Quit),
             key_code!(KeyCode::Tab) => Some(Msg::SwitchPane),
+            key_code_char!('?') => Some(Msg::ToggleHelp),
             _ => match self.focused {
                 PaneType::List => self.list_pane.handle_key(key),
                 PaneType::Tool => self.tool_pane.handle_key(key),

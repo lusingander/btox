@@ -1,5 +1,5 @@
 use arboard::Clipboard;
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
     buffer::Buffer,
@@ -116,57 +116,17 @@ impl Page for UuidPage {
     fn update(&mut self, msg: Msg) -> Option<Msg> {
         match msg {
             Msg::UuidPageSelectNextItem => {
-                self.cur.item = self.cur.item.next();
+                self.select_next_item();
             }
             Msg::UuidPageSelectPrevItem => {
-                self.cur.item = self.cur.item.prev();
+                self.select_prev_item();
             }
-            Msg::UuidPageCurrentItemSelectNext => match self.cur.item {
-                PageItems::Dash => {
-                    if self.cur.dash_sel.val() < DashItemSelect::len() - 1 {
-                        self.cur.dash_sel = self.cur.dash_sel.next();
-                    }
-                }
-                PageItems::Case => {
-                    if self.cur.case_sel.val() < CaseItemSelect::len() - 1 {
-                        self.cur.case_sel = self.cur.case_sel.next();
-                    }
-                }
-                PageItems::Version => {
-                    if self.cur.ver_sel.val() < VersionItemSelect::len() - 1 {
-                        self.cur.ver_sel = self.cur.ver_sel.next();
-                    }
-                }
-                PageItems::Count => {
-                    if self.cur.count < COUNT_MAX {
-                        self.cur.count += 1;
-                    }
-                }
-                PageItems::Output => {}
-            },
-            Msg::UuidPageCurrentItemSelectPrev => match self.cur.item {
-                PageItems::Dash => {
-                    if self.cur.dash_sel.val() > 0 {
-                        self.cur.dash_sel = self.cur.dash_sel.prev();
-                    }
-                }
-                PageItems::Case => {
-                    if self.cur.case_sel.val() > 0 {
-                        self.cur.case_sel = self.cur.case_sel.prev();
-                    }
-                }
-                PageItems::Version => {
-                    if self.cur.ver_sel.val() > 0 {
-                        self.cur.ver_sel = self.cur.ver_sel.prev();
-                    }
-                }
-                PageItems::Count => {
-                    if self.cur.count > 1 {
-                        self.cur.count -= 1;
-                    }
-                }
-                PageItems::Output => {}
-            },
+            Msg::UuidPageCurrentItemSelectNext => {
+                self.current_item_select_next();
+            }
+            Msg::UuidPageCurrentItemSelectPrev => {
+                self.current_item_select_prev();
+            }
             Msg::UuidPageGenerate => {
                 self.generate_uuid();
             }
@@ -249,9 +209,79 @@ impl Page for UuidPage {
     fn unfocus(&mut self) {
         self.focused = false;
     }
+
+    fn helps(&self) -> Vec<&str> {
+        vec![
+            "<j/k> Select item",
+            "<h/l> Select current item value",
+            "<Enter> Generate uuid",
+            "<y> Copy to clipboard",
+            "<p> Paste from clipboard",
+        ]
+    }
 }
 
 impl UuidPage {
+    fn select_next_item(&mut self) {
+        self.cur.item = self.cur.item.next();
+    }
+
+    fn select_prev_item(&mut self) {
+        self.cur.item = self.cur.item.prev();
+    }
+
+    fn current_item_select_next(&mut self) {
+        match self.cur.item {
+            PageItems::Dash => {
+                if self.cur.dash_sel.val() < DashItemSelect::len() - 1 {
+                    self.cur.dash_sel = self.cur.dash_sel.next();
+                }
+            }
+            PageItems::Case => {
+                if self.cur.case_sel.val() < CaseItemSelect::len() - 1 {
+                    self.cur.case_sel = self.cur.case_sel.next();
+                }
+            }
+            PageItems::Version => {
+                if self.cur.ver_sel.val() < VersionItemSelect::len() - 1 {
+                    self.cur.ver_sel = self.cur.ver_sel.next();
+                }
+            }
+            PageItems::Count => {
+                if self.cur.count < COUNT_MAX {
+                    self.cur.count += 1;
+                }
+            }
+            PageItems::Output => {}
+        }
+    }
+
+    fn current_item_select_prev(&mut self) {
+        match self.cur.item {
+            PageItems::Dash => {
+                if self.cur.dash_sel.val() > 0 {
+                    self.cur.dash_sel = self.cur.dash_sel.prev();
+                }
+            }
+            PageItems::Case => {
+                if self.cur.case_sel.val() > 0 {
+                    self.cur.case_sel = self.cur.case_sel.prev();
+                }
+            }
+            PageItems::Version => {
+                if self.cur.ver_sel.val() > 0 {
+                    self.cur.ver_sel = self.cur.ver_sel.prev();
+                }
+            }
+            PageItems::Count => {
+                if self.cur.count > 1 {
+                    self.cur.count -= 1;
+                }
+            }
+            PageItems::Output => {}
+        }
+    }
+
     fn generate_uuid(&mut self) {
         self.ids = (0..self.cur.count).map(|_| Uuid::new_v4()).collect();
     }

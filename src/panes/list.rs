@@ -1,4 +1,3 @@
-use crossterm::event::{KeyCode, KeyEvent};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     buffer::Buffer,
@@ -24,6 +23,18 @@ impl PageType {
             PageType::Foo => Msg::ToolPaneSelectFooPage,
             PageType::Bar => Msg::ToolPaneSelectBarPage,
         }
+    }
+
+    fn str(&self) -> &str {
+        match self {
+            PageType::Uuid => "UUID",
+            PageType::Foo => "Foo",
+            PageType::Bar => "Bar",
+        }
+    }
+
+    fn strings_vec() -> Vec<String> {
+        Self::vars_vec().iter().map(|s| s.str().into()).collect()
     }
 }
 
@@ -66,11 +77,11 @@ impl Pane for ListPane {
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
-        let items = vec!["uuid", "foo", "bar"]
+        let items = PageType::strings_vec()
             .into_iter()
             .enumerate()
             .map(|(i, label)| {
-                let item = ListItem::new(label);
+                let item = ListItem::new(format!(" {} ", label));
                 if i == self.selected as usize {
                     let selected_color = if self.focused {
                         Color::Blue
