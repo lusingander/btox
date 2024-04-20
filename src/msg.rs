@@ -14,4 +14,5 @@ pub enum Msg {
     UuidPageSelectPrevItem,
     UuidPageCurrentItemSelectNext,
     UuidPageCurrentItemSelectPrev,
+    UuidPageGenerate,
 }

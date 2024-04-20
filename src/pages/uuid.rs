@@ -2,18 +2,22 @@ use crossterm::event::{KeyCode, KeyEvent};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     buffer::Buffer,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Layout, Rect},
     style::{Color, Style},
+    text::Line,
     widgets::{Block, Paragraph, Widget},
 };
+use uuid::Uuid;
 
-use crate::{key_code_char, msg::Msg, pages::page::Page, widget::select::Select};
+use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, widget::select::Select};
 
 const COUNT_MAX: usize = 100;
 
 pub struct UuidPage {
     focused: bool,
     cur: CurrentStatus,
+
+    ids: Vec<Uuid>,
 }
 
 struct CurrentStatus {
@@ -35,6 +39,7 @@ impl UuidPage {
                 ver_sel: VersionItemSelect::V4,
                 count: 1,
             },
+            ids: Vec::new(),
         }
     }
 }
@@ -100,6 +105,7 @@ impl Page for UuidPage {
             key_code_char!('k') => Some(Msg::UuidPageSelectPrevItem),
             key_code_char!('l') => Some(Msg::UuidPageCurrentItemSelectNext),
             key_code_char!('h') => Some(Msg::UuidPageCurrentItemSelectPrev),
+            key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
             _ => None,
         }
     }
@@ -158,22 +164,22 @@ impl Page for UuidPage {
                 }
                 PageItems::Output => {}
             },
+            Msg::UuidPageGenerate => {
+                self.ids = (0..self.cur.count).map(|_| Uuid::new_v4()).collect();
+            }
             _ => {}
         }
         None
     }
 
     fn render(&self, buf: &mut Buffer, area: Rect) {
-        let chunks = Layout::new(
-            Direction::Vertical,
-            [
-                Constraint::Length(2),
-                Constraint::Length(2),
-                Constraint::Length(2),
-                Constraint::Length(2),
-                Constraint::Min(0),
-            ],
-        )
+        let chunks = Layout::vertical([
+            Constraint::Length(2),
+            Constraint::Length(2),
+            Constraint::Length(2),
+            Constraint::Length(2),
+            Constraint::Min(0),
+        ])
         .split(area);
 
         let dash_sel = Select::new(
@@ -218,7 +224,11 @@ impl Page for UuidPage {
             Style::default().fg(Color::DarkGray)
         };
 
-        let uuids = "";
+        let uuids: Vec<Line<'_>> = self
+            .ids
+            .iter()
+            .map(|id| Line::raw(self.format_uuid(id)))
+            .collect();
         let output = Paragraph::new(uuids).block(Block::bordered().style(output_style));
         output.render(chunks[4], buf);
     }
@@ -229,5 +239,26 @@ impl Page for UuidPage {
 
     fn unfocus(&mut self) {
         self.focused = false;
+    }
+}
+
+impl UuidPage {
+    fn format_uuid(&self, id: &Uuid) -> String {
+        let mut buf = Uuid::encode_buffer();
+        let s = match (self.cur.dash_sel, self.cur.case_sel) {
+            (DashItemSelect::WithDash, CaseItemSelect::Lowercase) => {
+                id.hyphenated().encode_lower(&mut buf)
+            }
+            (DashItemSelect::WithDash, CaseItemSelect::Uppercase) => {
+                id.hyphenated().encode_upper(&mut buf)
+            }
+            (DashItemSelect::WithoutDash, CaseItemSelect::Lowercase) => {
+                id.simple().encode_lower(&mut buf)
+            }
+            (DashItemSelect::WithoutDash, CaseItemSelect::Uppercase) => {
+                id.simple().encode_upper(&mut buf)
+            }
+        };
+        s.to_string()
     }
 }

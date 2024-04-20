@@ -4,7 +4,7 @@ use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Layout},
     Frame, Terminal,
 };
 
@@ -109,11 +109,8 @@ impl App {
     }
 
     fn render(&self, f: &mut Frame) {
-        let chunks = Layout::new(
-            Direction::Horizontal,
-            [Constraint::Length(20), Constraint::Min(0)],
-        )
-        .split(f.size());
+        let chunks =
+            Layout::horizontal([Constraint::Length(20), Constraint::Min(0)]).split(f.size());
 
         self.list_pane.render(f.buffer_mut(), chunks[0]);
         self.tool_pane.render(f.buffer_mut(), chunks[1]);
