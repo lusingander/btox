@@ -1,3 +1,4 @@
+use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
     buffer::Buffer,
@@ -6,7 +7,7 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, List, ListItem, Widget},
 };
 
-use crate::{key_code_char, msg::Msg, panes::pane::Pane};
+use crate::{key_code, key_code_char, msg::Msg, panes::pane::Pane};
 
 zero_indexed_enum! {
     PageType => [
@@ -55,6 +56,7 @@ impl ListPane {
 impl Pane for ListPane {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
+            key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('j') => Some(Msg::ListPaneSelectNext),
             key_code_char!('k') => Some(Msg::ListPaneSelectPrev),
             _ => None,

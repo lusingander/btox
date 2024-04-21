@@ -102,6 +102,7 @@ impl VersionItemSelect {
 impl Page for UuidPage {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
+            key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('j') => Some(Msg::UuidPageSelectNextItem),
             key_code_char!('k') => Some(Msg::UuidPageSelectPrevItem),
             key_code_char!('l') => Some(Msg::UuidPageCurrentItemSelectNext),
