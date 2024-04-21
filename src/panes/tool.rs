@@ -94,12 +94,13 @@ impl Pane for ToolPane {
     fn unfocus(&mut self) {
         self.focused = false;
         self.page.unfocus();
+        self.help = false;
     }
 }
 
 impl ToolPane {
     fn help_lines(&self, width: u16) -> Vec<Line> {
-        if self.help {
+        if self.help && self.focused {
             let delimiter = ", ";
             group_strs_to_fit_width(&self.page.helps(), width as usize, delimiter)
                 .iter()

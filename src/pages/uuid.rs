@@ -216,13 +216,17 @@ impl Page for UuidPage {
     }
 
     fn helps(&self) -> Vec<&str> {
-        vec![
-            "<j/k> Select item",
-            "<h/l> Select current item value",
-            "<Enter> Generate uuid",
-            "<y> Copy to clipboard",
-            "<p> Paste from clipboard",
-        ]
+        let mut helps: Vec<&str> = Vec::new();
+        helps.push("<j/k> Select item");
+        if self.cur.item != PageItems::Output {
+            helps.push("<h/l> Select current item value");
+        }
+        helps.push("<Enter> Generate uuid");
+        if self.cur.item == PageItems::Output {
+            helps.push("<y> Copy to clipboard");
+            helps.push("<p> Paste from clipboard");
+        }
+        helps
     }
 }
 
@@ -292,6 +296,10 @@ impl UuidPage {
     }
 
     fn copy_to_clipboard(&self) -> Option<Msg> {
+        if self.cur.item != PageItems::Output {
+            return None;
+        }
+
         let ids: Vec<String> = self.ids.iter().map(|id| self.format_uuid(id)).collect();
         let text = ids.join("\n");
         let result = Clipboard::new().and_then(|mut c| c.set_text(text));
@@ -302,6 +310,10 @@ impl UuidPage {
     }
 
     fn paste_from_clipboard(&mut self) -> Option<Msg> {
+        if self.cur.item != PageItems::Output {
+            return None;
+        }
+
         let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
         let mut ids: Vec<Uuid> = Vec::new();
         let mut failure_count = 0;
