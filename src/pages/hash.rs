@@ -1,12 +1,15 @@
 use arboard::Clipboard;
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
+use md5::{Digest, Md5};
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
-    widgets::{Block, Padding, Paragraph, Widget},
+    widgets::{Block, Padding, Paragraph, Widget, Wrap},
 };
+use sha1::Sha1;
+use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
 use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, widget::select::Select};
 
@@ -19,16 +22,23 @@ struct CurrentStatus {
     item: PageItems,
     algo_sel: AlgoItemSelect,
     enc_sel: EncodeItemSelect,
+    input: String,
+    output: String,
 }
 
 impl HashPage {
     pub fn new(focused: bool) -> HashPage {
+        let algo_sel = AlgoItemSelect::Md5;
+        let input = String::new();
+        let output = calculate_hash(&input, algo_sel);
         HashPage {
             focused,
             cur: CurrentStatus {
                 item: PageItems::Algo,
-                algo_sel: AlgoItemSelect::Md5,
+                algo_sel,
                 enc_sel: EncodeItemSelect::Utf8,
+                input,
+                output,
             },
         }
     }
@@ -162,12 +172,15 @@ impl Page for HashPage {
             Style::default().fg(Color::DarkGray)
         };
 
-        let input = Paragraph::new("").block(
-            Block::bordered()
-                .style(input_style)
-                .title("Input")
-                .padding(Padding::horizontal(1)),
-        );
+        let input_text = self.cur.input.clone();
+        let input = Paragraph::new(input_text)
+            .block(
+                Block::bordered()
+                    .style(input_style)
+                    .title("Input")
+                    .padding(Padding::horizontal(1)),
+            )
+            .wrap(Wrap { trim: false });
         input.render(chunks[2], buf);
 
         let output_style = if self.focused {
@@ -180,12 +193,15 @@ impl Page for HashPage {
             Style::default().fg(Color::DarkGray)
         };
 
-        let output = Paragraph::new("").block(
-            Block::bordered()
-                .style(output_style)
-                .title("Output")
-                .padding(Padding::horizontal(1)),
-        );
+        let output_text = self.cur.output.clone();
+        let output = Paragraph::new(output_text)
+            .block(
+                Block::bordered()
+                    .style(output_style)
+                    .title("Output")
+                    .padding(Padding::horizontal(1)),
+            )
+            .wrap(Wrap { trim: false });
         output.render(chunks[3], buf);
     }
 
@@ -228,11 +244,13 @@ impl HashPage {
                 if self.cur.algo_sel.val() < AlgoItemSelect::len() - 1 {
                     self.cur.algo_sel = self.cur.algo_sel.next();
                 }
+                self.update_hash();
             }
             PageItems::Encode => {
                 if self.cur.enc_sel.val() < EncodeItemSelect::len() - 1 {
                     self.cur.enc_sel = self.cur.enc_sel.next();
                 }
+                self.update_hash();
             }
             PageItems::Input => {}
             PageItems::Output => {}
@@ -245,11 +263,13 @@ impl HashPage {
                 if self.cur.algo_sel.val() > 0 {
                     self.cur.algo_sel = self.cur.algo_sel.prev();
                 }
+                self.update_hash();
             }
             PageItems::Encode => {
                 if self.cur.enc_sel.val() > 0 {
                     self.cur.enc_sel = self.cur.enc_sel.prev();
                 }
+                self.update_hash();
             }
             PageItems::Input => {}
             PageItems::Output => {}
@@ -261,7 +281,7 @@ impl HashPage {
             return None;
         }
 
-        let text = "";
+        let text = &self.cur.output;
         let result = Clipboard::new().and_then(|mut c| c.set_text(text));
         match result {
             Ok(_) => Some(Msg::NotifyInfo("Copy to clipboard succeeded".into())),
@@ -274,7 +294,36 @@ impl HashPage {
             return None;
         }
 
-        let _ = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
+        let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
+        self.cur.input = text;
+
+        self.update_hash();
+
         None
     }
+
+    fn update_hash(&mut self) {
+        self.cur.output = calculate_hash(&self.cur.input, self.cur.algo_sel);
+    }
+}
+
+fn calculate_hash(input: &str, algo_sel: AlgoItemSelect) -> String {
+    let input_bytes = input.as_bytes();
+    match algo_sel {
+        AlgoItemSelect::Md5 => hash_to_str(&Md5::digest(input_bytes)),
+        AlgoItemSelect::Sha1 => hash_to_str(&Sha1::digest(input_bytes)),
+        AlgoItemSelect::Sha224 => hash_to_str(&Sha224::digest(input_bytes)),
+        AlgoItemSelect::Sha256 => hash_to_str(&Sha256::digest(input_bytes)),
+        AlgoItemSelect::Sha384 => hash_to_str(&Sha384::digest(input_bytes)),
+        AlgoItemSelect::Sha512_224 => hash_to_str(&Sha512_224::digest(input_bytes)),
+        AlgoItemSelect::Sha512_256 => hash_to_str(&Sha512_256::digest(input_bytes)),
+        AlgoItemSelect::Sha512 => hash_to_str(&Sha512::digest(input_bytes)),
+    }
+}
+
+fn hash_to_str(hash: &[u8]) -> String {
+    let mut buf = [0u8; 128];
+    base16ct::lower::encode_str(hash, &mut buf)
+        .unwrap()
+        .to_string()
 }
