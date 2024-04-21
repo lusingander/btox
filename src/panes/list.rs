@@ -13,8 +13,6 @@ zero_indexed_enum! {
     PageType => [
         Uuid,
         Hash,
-        Foo,
-        Bar,
     ]
 }
 
@@ -23,8 +21,6 @@ impl PageType {
         match self {
             PageType::Uuid => Msg::ToolPaneSelectUuidPage,
             PageType::Hash => Msg::ToolPaneSelectHashPage,
-            PageType::Foo => Msg::ToolPaneSelectFooPage,
-            PageType::Bar => Msg::ToolPaneSelectBarPage,
         }
     }
 
@@ -32,8 +28,6 @@ impl PageType {
         match self {
             PageType::Uuid => "UUID",
             PageType::Hash => "Hash",
-            PageType::Foo => "Foo",
-            PageType::Bar => "Bar",
         }
     }
 
