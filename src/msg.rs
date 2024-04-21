@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Msg {
     Quit,
     SwitchPane,
@@ -6,6 +6,10 @@ pub enum Msg {
 
     ListPaneSelectNext,
     ListPaneSelectPrev,
+
+    NotifyInfo(String),
+    NotifyWarn(String),
+    NotifyError(String),
 
     ToolPaneSelectUuidPage,
     ToolPaneSelectFooPage,

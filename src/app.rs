@@ -4,7 +4,11 @@ use crossterm::event::{Event, KeyCode};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Layout},
+    buffer::Buffer,
+    layout::{Constraint, Layout, Margin, Rect},
+    style::{Color, Modifier, Style},
+    text::Line,
+    widgets::Widget,
     Frame, Terminal,
 };
 
@@ -21,9 +25,17 @@ zero_indexed_enum! {
     ]
 }
 
+enum Notification {
+    None,
+    Info(String),
+    Warn(String),
+    Error(String),
+}
+
 pub struct App {
     quit: bool,
     focused: PaneType,
+    notification: Notification,
     list_pane: ListPane,
     tool_pane: ToolPane,
 }
@@ -33,6 +45,7 @@ impl App {
         App {
             quit: false,
             focused: PaneType::List,
+            notification: Notification::None,
             list_pane: ListPane::new(true),
             tool_pane: ToolPane::new(false),
         }
@@ -48,6 +61,8 @@ impl App {
 
             match rx.recv().unwrap() {
                 Event::Key(key) => {
+                    self.notification = Notification::None;
+
                     let mut current_msg = self.handle_key(key);
                     while let Some(msg) = current_msg {
                         current_msg = self.update(msg);
@@ -80,10 +95,19 @@ impl App {
             Msg::SwitchPane => {
                 self.switch_pane();
             }
+            Msg::NotifyInfo(msg) => {
+                self.notification = Notification::Info(msg);
+            }
+            Msg::NotifyWarn(msg) => {
+                self.notification = Notification::Warn(msg);
+            }
+            Msg::NotifyError(msg) => {
+                self.notification = Notification::Error(msg);
+            }
             _ => {
-                let list_msg = self.list_pane.update(msg);
-                let tool_msg = self.tool_pane.update(msg);
-                return first_some(&[list_msg, tool_msg]);
+                let list_msg = self.list_pane.update(msg.clone());
+                let tool_msg = self.tool_pane.update(msg.clone());
+                return first_some(vec![list_msg, tool_msg]);
             }
         }
         None
@@ -110,11 +134,34 @@ impl App {
     }
 
     fn render(&self, f: &mut Frame) {
-        let chunks =
-            Layout::horizontal([Constraint::Length(20), Constraint::Min(0)]).split(f.size());
+        let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(f.size());
 
-        self.list_pane.render(f.buffer_mut(), chunks[0]);
-        self.tool_pane.render(f.buffer_mut(), chunks[1]);
+        self.render_panes(f.buffer_mut(), chunks[0]);
+        self.render_notification(f.buffer_mut(), chunks[1]);
+    }
+
+    fn render_panes(&self, buf: &mut Buffer, area: Rect) {
+        let chunks = Layout::horizontal([Constraint::Length(20), Constraint::Min(0)]).split(area);
+
+        self.list_pane.render(buf, chunks[0]);
+        self.tool_pane.render(buf, chunks[1]);
+    }
+
+    fn render_notification(&self, buf: &mut Buffer, area: Rect) {
+        let area = area.inner(&Margin::new(1, 0));
+        let style = Style::default().add_modifier(Modifier::BOLD);
+        match &self.notification {
+            Notification::Info(msg) => {
+                Line::styled(msg, style.fg(Color::Green)).render(area, buf);
+            }
+            Notification::Warn(msg) => {
+                Line::styled(msg, style.fg(Color::Yellow)).render(area, buf);
+            }
+            Notification::Error(msg) => {
+                Line::styled(msg, style.fg(Color::Red)).render(area, buf);
+            }
+            Notification::None => {}
+        };
     }
 
     fn resize(&mut self, w: u16, h: u16) {
@@ -122,6 +169,6 @@ impl App {
     }
 }
 
-fn first_some<T: Copy>(opts: &[Option<T>]) -> Option<T> {
-    opts.iter().copied().flatten().next()
+fn first_some<T>(opts: Vec<Option<T>>) -> Option<T> {
+    opts.into_iter().find(|opt| opt.is_some()).flatten()
 }

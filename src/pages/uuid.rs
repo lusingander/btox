@@ -6,7 +6,7 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
     text::Line,
-    widgets::{Block, Paragraph, Widget},
+    widgets::{Block, Padding, Paragraph, Widget},
 };
 use uuid::Uuid;
 
@@ -131,10 +131,10 @@ impl Page for UuidPage {
                 self.generate_uuid();
             }
             Msg::UuidPageCopy => {
-                self.copy_to_clipboard();
+                return self.copy_to_clipboard();
             }
             Msg::UuidPagePaste => {
-                self.paste_from_clipboard();
+                return self.paste_from_clipboard();
             }
             _ => {}
         }
@@ -198,7 +198,11 @@ impl Page for UuidPage {
             .iter()
             .map(|id| Line::raw(self.format_uuid(id)))
             .collect();
-        let output = Paragraph::new(uuids).block(Block::bordered().style(output_style));
+        let output = Paragraph::new(uuids).block(
+            Block::bordered()
+                .style(output_style)
+                .padding(Padding::horizontal(1)),
+        );
         output.render(chunks[4], buf);
     }
 
@@ -286,21 +290,35 @@ impl UuidPage {
         self.ids = (0..self.cur.count).map(|_| Uuid::new_v4()).collect();
     }
 
-    fn copy_to_clipboard(&self) {
+    fn copy_to_clipboard(&self) -> Option<Msg> {
         let ids: Vec<String> = self.ids.iter().map(|id| self.format_uuid(id)).collect();
         let text = ids.join("\n");
-        Clipboard::new().and_then(|mut c| c.set_text(text)).unwrap();
+        let result = Clipboard::new().and_then(|mut c| c.set_text(text));
+        match result {
+            Ok(_) => Some(Msg::NotifyInfo("Copy to clipboard succeeded".into())),
+            Err(_) => Some(Msg::NotifyError("Copy to clipboard failed".into())),
+        }
     }
 
-    fn paste_from_clipboard(&mut self) {
+    fn paste_from_clipboard(&mut self) -> Option<Msg> {
         let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
         let mut ids: Vec<Uuid> = Vec::new();
-        for s in text.split_whitespace() {
+        let mut failure_count = 0;
+        for s in text.lines() {
             if let Ok(id) = Uuid::parse_str(s) {
                 ids.push(id);
+            } else {
+                failure_count += 1;
             }
         }
         self.ids = ids;
+
+        if failure_count > 0 {
+            let msg = format!("Could not parse {} lines of string to UUID", failure_count);
+            Some(Msg::NotifyWarn(msg))
+        } else {
+            None
+        }
     }
 
     fn format_uuid(&self, id: &Uuid) -> String {
