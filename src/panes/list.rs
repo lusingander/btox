@@ -12,6 +12,7 @@ use crate::{key_code, key_code_char, msg::Msg, panes::pane::Pane};
 zero_indexed_enum! {
     PageType => [
         Uuid,
+        Hash,
         Foo,
         Bar,
     ]
@@ -21,6 +22,7 @@ impl PageType {
     fn select_msg(&self) -> Msg {
         match self {
             PageType::Uuid => Msg::ToolPaneSelectUuidPage,
+            PageType::Hash => Msg::ToolPaneSelectHashPage,
             PageType::Foo => Msg::ToolPaneSelectFooPage,
             PageType::Bar => Msg::ToolPaneSelectBarPage,
         }
@@ -29,6 +31,7 @@ impl PageType {
     fn str(&self) -> &str {
         match self {
             PageType::Uuid => "UUID",
+            PageType::Hash => "Hash",
             PageType::Foo => "Foo",
             PageType::Bar => "Bar",
         }

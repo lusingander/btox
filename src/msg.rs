@@ -12,6 +12,7 @@ pub enum Msg {
     NotifyError(String),
 
     ToolPaneSelectUuidPage,
+    ToolPaneSelectHashPage,
     ToolPaneSelectFooPage,
     ToolPaneSelectBarPage,
 
