@@ -23,4 +23,11 @@ pub enum Msg {
     UuidPageGenerate,
     UuidPageCopy,
     UuidPagePaste,
+
+    HashPageSelectNextItem,
+    HashPageSelectPrevItem,
+    HashPageCurrentItemSelectNext,
+    HashPageCurrentItemSelectPrev,
+    HashPageCopy,
+    HashPagePaste,
 }
