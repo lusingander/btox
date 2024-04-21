@@ -103,10 +103,14 @@ impl Page for UuidPage {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('j') => Some(Msg::UuidPageSelectNextItem),
-            key_code_char!('k') => Some(Msg::UuidPageSelectPrevItem),
-            key_code_char!('l') => Some(Msg::UuidPageCurrentItemSelectNext),
-            key_code_char!('h') => Some(Msg::UuidPageCurrentItemSelectPrev),
+            key_code_char!('n', Ctrl) => Some(Msg::UuidPageSelectNextItem),
+            key_code_char!('p', Ctrl) => Some(Msg::UuidPageSelectPrevItem),
+            key_code_char!('l') | key_code!(KeyCode::Right) => {
+                Some(Msg::UuidPageCurrentItemSelectNext)
+            }
+            key_code_char!('h') | key_code!(KeyCode::Left) => {
+                Some(Msg::UuidPageCurrentItemSelectPrev)
+            }
             key_code_char!('y') => Some(Msg::UuidPageCopy),
             key_code_char!('p') => Some(Msg::UuidPagePaste),
             key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
@@ -217,9 +221,9 @@ impl Page for UuidPage {
 
     fn helps(&self) -> Vec<&str> {
         let mut helps: Vec<&str> = Vec::new();
-        helps.push("<j/k> Select item");
+        helps.push("<C-n/C-p> Select item");
         if self.cur.item != PageItems::Output {
-            helps.push("<h/l> Select current item value");
+            helps.push("<Left/Right> Select current item value");
         }
         helps.push("<Enter> Generate uuid");
         if self.cur.item == PageItems::Output {

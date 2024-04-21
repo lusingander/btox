@@ -102,10 +102,14 @@ impl Page for HashPage {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('j') => Some(Msg::HashPageSelectNextItem),
-            key_code_char!('k') => Some(Msg::HashPageSelectPrevItem),
-            key_code_char!('l') => Some(Msg::HashPageCurrentItemSelectNext),
-            key_code_char!('h') => Some(Msg::HashPageCurrentItemSelectPrev),
+            key_code_char!('n', Ctrl) => Some(Msg::HashPageSelectNextItem),
+            key_code_char!('p', Ctrl) => Some(Msg::HashPageSelectPrevItem),
+            key_code_char!('l') | key_code!(KeyCode::Right) => {
+                Some(Msg::HashPageCurrentItemSelectNext)
+            }
+            key_code_char!('h') | key_code!(KeyCode::Left) => {
+                Some(Msg::HashPageCurrentItemSelectPrev)
+            }
             key_code_char!('y') => Some(Msg::HashPageCopy),
             key_code_char!('p') => Some(Msg::HashPagePaste),
             _ => None,
@@ -215,9 +219,9 @@ impl Page for HashPage {
 
     fn helps(&self) -> Vec<&str> {
         let mut helps: Vec<&str> = Vec::new();
-        helps.push("<j/k> Select item");
+        helps.push("<C-n/C-p> Select item");
         if matches!(self.cur.item, PageItems::Algo | PageItems::Encode) {
-            helps.push("<h/l> Select current item value");
+            helps.push("<Left/Right> Select current item value");
         }
         if matches!(self.cur.item, PageItems::Output) {
             helps.push("<y> Copy to clipboard");

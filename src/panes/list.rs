@@ -54,8 +54,8 @@ impl Pane for ListPane {
     fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('j') => Some(Msg::ListPaneSelectNext),
-            key_code_char!('k') => Some(Msg::ListPaneSelectPrev),
+            key_code_char!('n', Ctrl) => Some(Msg::ListPaneSelectNext),
+            key_code_char!('p', Ctrl) => Some(Msg::ListPaneSelectPrev),
             _ => None,
         }
     }
