@@ -13,6 +13,7 @@ pub enum Msg {
 
     ToolPaneSelectUuidPage,
     ToolPaneSelectHashPage,
+    ToolPaneSelectUnixTimePage,
 
     UuidPageSelectNextItem,
     UuidPageSelectPrevItem,
@@ -28,4 +29,12 @@ pub enum Msg {
     HashPageCurrentItemSelectPrev,
     HashPageCopy,
     HashPagePaste,
+
+    UnixTimePageSelectNextItem,
+    UnixTimePageSelectPrevItem,
+    UnixTimePageEditStart,
+    UnixTimePageEditEnd,
+    UnixTimePageEditKeyEvent(crossterm::event::KeyEvent),
+    UnixTimePageCopy,
+    UnixTimePagePaste,
 }

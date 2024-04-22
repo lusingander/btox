@@ -13,6 +13,7 @@ zero_indexed_enum! {
     PageType => [
         Uuid,
         Hash,
+        UnixTime,
     ]
 }
 
@@ -21,6 +22,7 @@ impl PageType {
         match self {
             PageType::Uuid => Msg::ToolPaneSelectUuidPage,
             PageType::Hash => Msg::ToolPaneSelectHashPage,
+            PageType::UnixTime => Msg::ToolPaneSelectUnixTimePage,
         }
     }
 
@@ -28,6 +30,7 @@ impl PageType {
         match self {
             PageType::Uuid => "UUID",
             PageType::Hash => "Hash",
+            PageType::UnixTime => "Unix time",
         }
     }
 
