@@ -2,10 +2,10 @@ use chrono::{DateTime, Utc};
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
-    buffer::Buffer,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
-    widgets::{Block, Borders, Padding, Paragraph, Widget},
+    widgets::{Block, Borders, Padding, Paragraph},
+    Frame,
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
@@ -107,7 +107,7 @@ impl Page for UnixTimePage {
         None
     }
 
-    fn render(&self, buf: &mut Buffer, area: Rect) {
+    fn render(&self, f: &mut Frame, area: Rect) {
         let chunks = Layout::vertical([
             Constraint::Length(3),
             Constraint::Length(2),
@@ -131,7 +131,7 @@ impl Page for UnixTimePage {
                 .title("Input")
                 .padding(Padding::horizontal(1)),
         );
-        input.render(chunks[0], buf);
+        f.render_widget(input, chunks[0]);
 
         if !matches!(self.cur.status, Status::None) {
             let status_style = match self.cur.status {
@@ -145,7 +145,7 @@ impl Page for UnixTimePage {
                     .style(status_style)
                     .padding(Padding::horizontal(1)),
             );
-            status.render(chunks[1], buf);
+            f.render_widget(status, chunks[1])
         }
 
         let output_style = if self.focused {
@@ -164,7 +164,7 @@ impl Page for UnixTimePage {
                 .title("Output")
                 .padding(Padding::horizontal(1)),
         );
-        output.render(chunks[2], buf);
+        f.render_widget(output, chunks[2]);
     }
 
     fn focus(&mut self) {

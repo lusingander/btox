@@ -1,10 +1,10 @@
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
-    buffer::Buffer,
     layout::Rect,
     style::{Color, Style},
-    widgets::{Block, BorderType, Borders, List, ListItem, Widget},
+    widgets::{Block, BorderType, Borders, List, ListItem},
+    Frame,
 };
 
 use crate::{key_code, key_code_char, msg::Msg, panes::pane::Pane};
@@ -78,7 +78,7 @@ impl Pane for ListPane {
         None
     }
 
-    fn render(&self, buf: &mut Buffer, area: Rect) {
+    fn render(&self, f: &mut Frame, area: Rect) {
         let items = PageType::strings_vec()
             .into_iter()
             .enumerate()
@@ -108,7 +108,7 @@ impl Pane for ListPane {
                 .style(block_style),
         );
 
-        list.render(area, buf);
+        f.render_widget(list, area);
     }
 
     fn focus(&mut self) {

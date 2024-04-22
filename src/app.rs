@@ -4,11 +4,9 @@ use crossterm::event::{Event, KeyCode};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
-    buffer::Buffer,
     layout::{Constraint, Layout, Margin, Rect},
     style::{Color, Modifier, Style},
     text::Line,
-    widgets::Widget,
     Frame, Terminal,
 };
 
@@ -136,29 +134,29 @@ impl App {
     fn render(&self, f: &mut Frame) {
         let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(f.size());
 
-        self.render_panes(f.buffer_mut(), chunks[0]);
-        self.render_notification(f.buffer_mut(), chunks[1]);
+        self.render_panes(f, chunks[0]);
+        self.render_notification(f, chunks[1]);
     }
 
-    fn render_panes(&self, buf: &mut Buffer, area: Rect) {
+    fn render_panes(&self, f: &mut Frame, area: Rect) {
         let chunks = Layout::horizontal([Constraint::Length(20), Constraint::Min(0)]).split(area);
 
-        self.list_pane.render(buf, chunks[0]);
-        self.tool_pane.render(buf, chunks[1]);
+        self.list_pane.render(f, chunks[0]);
+        self.tool_pane.render(f, chunks[1]);
     }
 
-    fn render_notification(&self, buf: &mut Buffer, area: Rect) {
+    fn render_notification(&self, f: &mut Frame, area: Rect) {
         let area = area.inner(&Margin::new(1, 0));
         let style = Style::default().add_modifier(Modifier::BOLD);
         match &self.notification {
             Notification::Info(msg) => {
-                Line::styled(msg, style.fg(Color::Green)).render(area, buf);
+                f.render_widget(Line::styled(msg, style.fg(Color::Green)), area);
             }
             Notification::Warn(msg) => {
-                Line::styled(msg, style.fg(Color::Yellow)).render(area, buf);
+                f.render_widget(Line::styled(msg, style.fg(Color::Yellow)), area);
             }
             Notification::Error(msg) => {
-                Line::styled(msg, style.fg(Color::Red)).render(area, buf);
+                f.render_widget(Line::styled(msg, style.fg(Color::Red)), area);
             }
             Notification::None => {}
         };

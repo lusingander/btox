@@ -2,10 +2,10 @@ use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use md5::{Digest, Md5};
 use ratatui::{
-    buffer::Buffer,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
-    widgets::{Block, Padding, Paragraph, Widget, Wrap},
+    widgets::{Block, Padding, Paragraph, Wrap},
+    Frame,
 };
 use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
@@ -142,7 +142,7 @@ impl Page for HashPage {
         None
     }
 
-    fn render(&self, buf: &mut Buffer, area: Rect) {
+    fn render(&self, f: &mut Frame, area: Rect) {
         let chunks = Layout::vertical([
             Constraint::Length(2),
             Constraint::Length(2),
@@ -157,7 +157,7 @@ impl Page for HashPage {
             self.cur.item == PageItems::Algo,
             self.focused,
         );
-        algo_sel.render(chunks[0], buf);
+        f.render_widget(algo_sel, chunks[0]);
 
         let enc_sel = Select::new(
             EncodeItemSelect::strings_vec(),
@@ -165,7 +165,7 @@ impl Page for HashPage {
             self.cur.item == PageItems::Encode,
             self.focused,
         );
-        enc_sel.render(chunks[1], buf);
+        f.render_widget(enc_sel, chunks[1]);
 
         let input_style = if self.focused {
             if self.cur.item == PageItems::Input {
@@ -186,7 +186,7 @@ impl Page for HashPage {
                     .padding(Padding::horizontal(1)),
             )
             .wrap(Wrap { trim: false });
-        input.render(chunks[2], buf);
+        f.render_widget(input, chunks[2]);
 
         let output_style = if self.focused {
             if self.cur.item == PageItems::Output {
@@ -207,7 +207,7 @@ impl Page for HashPage {
                     .padding(Padding::horizontal(1)),
             )
             .wrap(Wrap { trim: false });
-        output.render(chunks[3], buf);
+        f.render_widget(output, chunks[3]);
     }
 
     fn focus(&mut self) {

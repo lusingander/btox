@@ -1,9 +1,9 @@
 use ratatui::{
-    buffer::Buffer,
     layout::{Constraint, Layout, Margin, Rect},
     style::{Color, Style},
     text::Line,
-    widgets::{Block, BorderType, Borders, Paragraph, Widget},
+    widgets::{Block, BorderType, Borders, Paragraph},
+    Frame,
 };
 
 use crate::{
@@ -55,7 +55,7 @@ impl Pane for ToolPane {
         None
     }
 
-    fn render(&self, buf: &mut Buffer, area: Rect) {
+    fn render(&self, f: &mut Frame, area: Rect) {
         let help_lines = self.help_lines(area.width - 2);
 
         let chunks = Layout::vertical([
@@ -74,15 +74,15 @@ impl Pane for ToolPane {
             .border_type(border_type)
             .style(block_style);
 
-        page_block.render(chunks[0], buf);
+        f.render_widget(page_block, chunks[0]);
 
         let page_content_area = chunks[0].inner(&Margin::new(2, 1));
-        self.page.render(buf, page_content_area);
+        self.page.render(f, page_content_area);
 
         if self.help {
             let help_area = chunks[1].inner(&Margin::new(1, 0));
             let help = Paragraph::new(help_lines);
-            help.render(help_area, buf);
+            f.render_widget(help, help_area);
         }
     }
 

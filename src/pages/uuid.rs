@@ -1,11 +1,11 @@
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
-    buffer::Buffer,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
     text::Line,
-    widgets::{Block, Padding, Paragraph, Widget},
+    widgets::{Block, Padding, Paragraph},
+    Frame,
 };
 use uuid::Uuid;
 
@@ -147,7 +147,7 @@ impl Page for UuidPage {
         None
     }
 
-    fn render(&self, buf: &mut Buffer, area: Rect) {
+    fn render(&self, f: &mut Frame, area: Rect) {
         let chunks = Layout::vertical([
             Constraint::Length(2),
             Constraint::Length(2),
@@ -163,7 +163,7 @@ impl Page for UuidPage {
             self.cur.item == PageItems::Dash,
             self.focused,
         );
-        dash_sel.render(chunks[0], buf);
+        f.render_widget(dash_sel, chunks[0]);
 
         let case_sel = Select::new(
             CaseItemSelect::strings_vec(),
@@ -171,7 +171,7 @@ impl Page for UuidPage {
             self.cur.item == PageItems::Case,
             self.focused,
         );
-        case_sel.render(chunks[1], buf);
+        f.render_widget(case_sel, chunks[1]);
 
         let version_sel = Select::new(
             VersionItemSelect::strings_vec(),
@@ -179,7 +179,7 @@ impl Page for UuidPage {
             self.cur.item == PageItems::Version,
             self.focused,
         );
-        version_sel.render(chunks[2], buf);
+        f.render_widget(version_sel, chunks[2]);
 
         let count_sel = Select::new(
             (1..=COUNT_MAX).map(|i| format!("{}", i)).collect(),
@@ -187,7 +187,7 @@ impl Page for UuidPage {
             self.cur.item == PageItems::Count,
             self.focused,
         );
-        count_sel.render(chunks[3], buf);
+        f.render_widget(count_sel, chunks[3]);
 
         let output_style = if self.focused {
             if self.cur.item == PageItems::Output {
@@ -209,7 +209,7 @@ impl Page for UuidPage {
                 .style(output_style)
                 .padding(Padding::horizontal(1)),
         );
-        output.render(chunks[4], buf);
+        f.render_widget(output, chunks[4]);
     }
 
     fn focus(&mut self) {
