@@ -1,4 +1,3 @@
-use arboard::Clipboard;
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use md5::{Digest, Md5};
@@ -11,7 +10,9 @@ use ratatui::{
 use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
-use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, widget::select::Select};
+use crate::{
+    key_code, key_code_char, msg::Msg, pages::page::Page, pages::util, widget::select::Select,
+};
 
 pub struct HashPage {
     focused: bool,
@@ -134,7 +135,7 @@ impl Page for HashPage {
                 return self.copy_to_clipboard();
             }
             Msg::HashPagePaste => {
-                return self.paste_from_clipboard();
+                self.paste_from_clipboard();
             }
             _ => {}
         }
@@ -286,24 +287,15 @@ impl HashPage {
         }
 
         let text = &self.cur.output;
-        let result = Clipboard::new().and_then(|mut c| c.set_text(text));
-        match result {
-            Ok(_) => Some(Msg::NotifyInfo("Copy to clipboard succeeded".into())),
-            Err(_) => Some(Msg::NotifyError("Copy to clipboard failed".into())),
-        }
+        util::copy_to_clipboard(text)
     }
 
-    fn paste_from_clipboard(&mut self) -> Option<Msg> {
-        if !matches!(self.cur.item, PageItems::Input) {
-            return None;
+    fn paste_from_clipboard(&mut self) {
+        if matches!(self.cur.item, PageItems::Input) {
+            self.cur.input = util::paste_from_clipboard().unwrap();
+
+            self.update_hash();
         }
-
-        let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
-        self.cur.input = text;
-
-        self.update_hash();
-
-        None
     }
 
     fn update_hash(&mut self) {

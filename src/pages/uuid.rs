@@ -1,4 +1,3 @@
-use arboard::Clipboard;
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
@@ -10,7 +9,9 @@ use ratatui::{
 };
 use uuid::Uuid;
 
-use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, widget::select::Select};
+use crate::{
+    key_code, key_code_char, msg::Msg, pages::page::Page, pages::util, widget::select::Select,
+};
 
 const COUNT_MAX: usize = 100;
 
@@ -222,11 +223,11 @@ impl Page for UuidPage {
     fn helps(&self) -> Vec<&str> {
         let mut helps: Vec<&str> = Vec::new();
         helps.push("<C-n/C-p> Select item");
-        if self.cur.item != PageItems::Output {
+        if !matches!(self.cur.item, PageItems::Output) {
             helps.push("<Left/Right> Select current item value");
         }
         helps.push("<Enter> Generate uuid");
-        if self.cur.item == PageItems::Output {
+        if matches!(self.cur.item, PageItems::Output) {
             helps.push("<y> Copy to clipboard");
             helps.push("<p> Paste from clipboard");
         }
@@ -300,25 +301,21 @@ impl UuidPage {
     }
 
     fn copy_to_clipboard(&self) -> Option<Msg> {
-        if self.cur.item != PageItems::Output {
+        if !matches!(self.cur.item, PageItems::Output) {
             return None;
         }
 
         let ids: Vec<String> = self.ids.iter().map(|id| self.format_uuid(id)).collect();
         let text = ids.join("\n");
-        let result = Clipboard::new().and_then(|mut c| c.set_text(text));
-        match result {
-            Ok(_) => Some(Msg::NotifyInfo("Copy to clipboard succeeded".into())),
-            Err(_) => Some(Msg::NotifyError("Copy to clipboard failed".into())),
-        }
+        util::copy_to_clipboard(&text)
     }
 
     fn paste_from_clipboard(&mut self) -> Option<Msg> {
-        if self.cur.item != PageItems::Output {
+        if !matches!(self.cur.item, PageItems::Output) {
             return None;
         }
 
-        let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
+        let text = util::paste_from_clipboard().unwrap();
         let mut ids: Vec<Uuid> = Vec::new();
         let mut failure_count = 0;
         for s in text.lines() {

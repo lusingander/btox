@@ -1,4 +1,3 @@
-use arboard::Clipboard;
 use chrono::{DateTime, Utc};
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
@@ -10,7 +9,7 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{key_code, key_code_char, msg::Msg, pages::page::Page};
+use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, pages::util};
 
 pub struct UnixTimePage {
     focused: bool,
@@ -223,15 +222,11 @@ impl UnixTimePage {
             PageItems::Input => self.cur.input.value(),
             PageItems::Output => self.cur.output.as_str(),
         };
-        let result = Clipboard::new().and_then(|mut c| c.set_text(text));
-        match result {
-            Ok(_) => Some(Msg::NotifyInfo("Copy to clipboard succeeded".into())),
-            Err(_) => Some(Msg::NotifyError("Copy to clipboard failed".into())),
-        }
+        util::copy_to_clipboard(text)
     }
 
     fn paste_from_clipboard(&mut self) {
-        let text = Clipboard::new().and_then(|mut c| c.get_text()).unwrap();
+        let text = util::paste_from_clipboard().unwrap();
         self.cur.input = self.cur.input.clone().with_value(text);
 
         self.update_output();
