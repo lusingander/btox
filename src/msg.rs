@@ -32,6 +32,8 @@ pub enum Msg {
 
     UnixTimePageSelectNextItem,
     UnixTimePageSelectPrevItem,
+    UnixTimePageCurrentItemSelectNext,
+    UnixTimePageCurrentItemSelectPrev,
     UnixTimePageEditStart,
     UnixTimePageEditEnd,
     UnixTimePageEditKeyEvent(crossterm::event::KeyEvent),

@@ -9,7 +9,12 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, pages::util};
+use crate::{
+    key_code, key_code_char,
+    msg::Msg,
+    pages::{page::Page, util},
+    widget::select::Select,
+};
 
 pub struct UnixTimePage {
     focused: bool,
@@ -20,6 +25,7 @@ struct CurrentStatus {
     item: PageItems,
     input: Input,
     output: String,
+    tz_sel: TimeZoneItemSelect,
     status: Status,
     edit: bool,
 }
@@ -48,6 +54,7 @@ impl UnixTimePage {
                 item: PageItems::Input,
                 input: Input::default(),
                 output: String::new(),
+                tz_sel: TimeZoneItemSelect::Utc,
                 status: Status::None,
                 edit: false,
             },
@@ -56,7 +63,27 @@ impl UnixTimePage {
 }
 
 zero_indexed_enum! {
-    PageItems => [Input, Output]
+    PageItems => [Input, Output, TimeZone]
+}
+
+zero_indexed_enum! {
+    TimeZoneItemSelect => [
+        Utc,
+        Local,
+    ]
+}
+
+impl TimeZoneItemSelect {
+    fn str(&self) -> &str {
+        match self {
+            TimeZoneItemSelect::Utc => "UTC",
+            TimeZoneItemSelect::Local => "Local",
+        }
+    }
+
+    fn strings_vec() -> Vec<String> {
+        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    }
 }
 
 impl Page for UnixTimePage {
@@ -72,6 +99,12 @@ impl Page for UnixTimePage {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('n', Ctrl) => Some(Msg::UnixTimePageSelectNextItem),
             key_code_char!('p', Ctrl) => Some(Msg::UnixTimePageSelectPrevItem),
+            key_code_char!('l') | key_code!(KeyCode::Right) => {
+                Some(Msg::UnixTimePageCurrentItemSelectNext)
+            }
+            key_code_char!('h') | key_code!(KeyCode::Left) => {
+                Some(Msg::UnixTimePageCurrentItemSelectPrev)
+            }
             key_code_char!('y') => Some(Msg::UnixTimePageCopy),
             key_code_char!('p') => Some(Msg::UnixTimePagePaste),
             key_code_char!('e') => Some(Msg::UnixTimePageEditStart),
@@ -86,6 +119,12 @@ impl Page for UnixTimePage {
             }
             Msg::UnixTimePageSelectPrevItem => {
                 self.select_prev_item();
+            }
+            Msg::UnixTimePageCurrentItemSelectNext => {
+                self.current_item_select_next();
+            }
+            Msg::UnixTimePageCurrentItemSelectPrev => {
+                self.current_item_select_prev();
             }
             Msg::UnixTimePageCopy => {
                 return self.copy_to_clipboard();
@@ -112,6 +151,8 @@ impl Page for UnixTimePage {
             Constraint::Length(3),
             Constraint::Length(2),
             Constraint::Length(3),
+            Constraint::Length(1),
+            Constraint::Length(2),
         ])
         .split(area);
 
@@ -165,6 +206,14 @@ impl Page for UnixTimePage {
                 .padding(Padding::horizontal(1)),
         );
         f.render_widget(output, chunks[2]);
+
+        let tz_sel = Select::new(
+            TimeZoneItemSelect::strings_vec(),
+            self.cur.tz_sel.val(),
+            self.cur.item == PageItems::TimeZone,
+            self.focused,
+        );
+        f.render_widget(tz_sel, chunks[4]);
     }
 
     fn focus(&mut self) {
@@ -181,10 +230,15 @@ impl Page for UnixTimePage {
             helps.push("<Esc> End edit");
         } else {
             helps.push("<C-n/C-p> Select item");
+            if matches!(self.cur.item, PageItems::TimeZone) {
+                helps.push("<Left/Right> Select current item value");
+            }
             if matches!(self.cur.item, PageItems::Input) {
                 helps.push("<e> Edit");
             }
-            helps.push("<y> Copy to clipboard");
+            if matches!(self.cur.item, PageItems::Input | PageItems::Output) {
+                helps.push("<y> Copy to clipboard");
+            }
             if matches!(self.cur.item, PageItems::Input) {
                 helps.push("<p> Paste from clipboard");
             }
@@ -200,6 +254,32 @@ impl UnixTimePage {
 
     fn select_prev_item(&mut self) {
         self.cur.item = self.cur.item.prev();
+    }
+
+    fn current_item_select_next(&mut self) {
+        match self.cur.item {
+            PageItems::TimeZone => {
+                if self.cur.tz_sel.val() < TimeZoneItemSelect::len() - 1 {
+                    self.cur.tz_sel = self.cur.tz_sel.next();
+                }
+                self.update_output();
+            }
+            PageItems::Input => {}
+            PageItems::Output => {}
+        }
+    }
+
+    fn current_item_select_prev(&mut self) {
+        match self.cur.item {
+            PageItems::TimeZone => {
+                if self.cur.tz_sel.val() > 0 {
+                    self.cur.tz_sel = self.cur.tz_sel.prev();
+                }
+                self.update_output();
+            }
+            PageItems::Input => {}
+            PageItems::Output => {}
+        }
     }
 
     fn edit_start(&mut self) {
@@ -218,14 +298,23 @@ impl UnixTimePage {
     }
 
     fn copy_to_clipboard(&self) -> Option<Msg> {
+        if !matches!(self.cur.item, PageItems::Input | PageItems::Output) {
+            return None;
+        }
+
         let text = match self.cur.item {
             PageItems::Input => self.cur.input.value(),
             PageItems::Output => self.cur.output.as_str(),
+            _ => "",
         };
         util::copy_to_clipboard(text)
     }
 
     fn paste_from_clipboard(&mut self) {
+        if !matches!(self.cur.item, PageItems::Input) {
+            return;
+        }
+
         let text = util::paste_from_clipboard().unwrap();
         self.cur.input = self.cur.input.clone().with_value(text);
 
@@ -238,7 +327,10 @@ impl UnixTimePage {
             self.cur.output = String::new();
             self.cur.status = Status::None;
         } else if let Some(dt) = parse_as_unix_timestamp(s) {
-            self.cur.output = dt.datetime.to_string();
+            self.cur.output = match self.cur.tz_sel {
+                TimeZoneItemSelect::Utc => dt.datetime.with_timezone(&Utc).to_string(),
+                TimeZoneItemSelect::Local => dt.datetime.with_timezone(&chrono::Local).to_string(),
+            };
             let msg = format!("valid unix timestamp ({:?})", dt.resolution);
             self.cur.status = Status::Info(msg);
         } else if let Some(dt) = parse_as_datetime(s) {
