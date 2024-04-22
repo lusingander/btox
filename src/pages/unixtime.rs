@@ -166,13 +166,24 @@ impl Page for UnixTimePage {
             Style::default().fg(Color::DarkGray)
         };
 
-        let input = Paragraph::new(self.cur.input.value()).block(
+        let input_max_width = chunks[0].width - 4;
+        let input_value = self.cur.input.value();
+        let input_start = input_value.len().saturating_sub(input_max_width as usize);
+        let input_content = &input_value[input_start..];
+        let input = Paragraph::new(input_content).block(
             Block::bordered()
                 .style(input_style)
                 .title("Input")
                 .padding(Padding::horizontal(1)),
         );
         f.render_widget(input, chunks[0]);
+
+        if self.cur.edit {
+            let visual_cursor = self.cur.input.visual_cursor() as u16;
+            let x = area.x + 2 + visual_cursor.min(input_max_width);
+            let y = area.y + 1;
+            f.set_cursor(x, y);
+        }
 
         if !matches!(self.cur.status, Status::None) {
             let status_style = match self.cur.status {
