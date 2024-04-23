@@ -40,4 +40,12 @@ pub enum Msg {
     UnixTimePageEditKeyEvent(crossterm::event::KeyEvent),
     UnixTimePageCopy,
     UnixTimePagePaste,
+
+    NumberBasePageSelectNextItem,
+    NumberBasePageSelectPrevItem,
+    NumberBasePageEditStart,
+    NumberBasePageEditEnd,
+    NumberBasePageEditKeyEvent(crossterm::event::KeyEvent),
+    NumberBasePageCopy,
+    NumberBasePagePaste,
 }
