@@ -91,3 +91,30 @@ Type@100ms "456"
 Escape
 Sleep 1s
 Screenshot ./img/unixtime.png
+
+Tab
+Sleep 500ms
+Ctrl+N
+Sleep 500ms
+Tab
+
+# number base
+Sleep 500ms
+Ctrl+N
+Sleep 500ms
+Ctrl+N
+Sleep 500ms
+Type "e"
+Sleep 500ms
+Type@100ms "1234"
+Sleep 500ms
+Escape
+Sleep 1s
+Ctrl+P
+Sleep 500ms
+Type "e"
+Sleep 500ms
+Type@100ms "567"
+Escape
+Sleep 1s
+Screenshot ./img/numberbase.png
