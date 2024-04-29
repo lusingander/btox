@@ -19,9 +19,22 @@ Detailed keybindings for each features can be displayed pressing the `?`.
 
 ## Features / Screenshots
 
+### UUID
+
 <img src="./img/uuid.png" width=600>
+
+### Hash
+
 <img src="./img/hash.png" width=600>
+
+### Unix time
+
 <img src="./img/unixtime.png" width=600>
+
+Datetime output format follows [strftime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
+
+### Number base
+
 <img src="./img/numberbase.png" width=600>
 
 ## License
