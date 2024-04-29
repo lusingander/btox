@@ -165,48 +165,10 @@ impl Page for UnixTimePage {
         ])
         .split(area);
 
-        let input_style = if self.focused {
-            if self.cur.item == PageItems::Input {
-                Style::default().fg(Color::Blue)
-            } else {
-                Style::default().fg(Color::Reset)
-            }
-        } else {
-            Style::default().fg(Color::DarkGray)
-        };
-
-        let input_max_width = chunks[0].width - 4;
-        let input_value = self.cur.input.value();
-        let input_start = input_value.len().saturating_sub(input_max_width as usize);
-        let input_content = &input_value[input_start..];
-        let input = Paragraph::new(input_content).block(
-            Block::bordered()
-                .style(input_style)
-                .title("Input")
-                .padding(Padding::horizontal(1)),
-        );
-        f.render_widget(input, chunks[0]);
-
-        if self.cur.edit && self.cur.item == PageItems::Input {
-            let visual_cursor = self.cur.input.visual_cursor() as u16;
-            let x = chunks[0].x + 2 + visual_cursor.min(input_max_width);
-            let y = chunks[0].y + 1;
-            f.set_cursor(x, y);
-        }
+        self.render_input(f, chunks[0], &self.cur.input, PageItems::Input, "Input");
 
         if !matches!(self.cur.input_status, Status::None) {
-            let status_style = match self.cur.input_status {
-                Status::Info(_) => Style::default().fg(Color::Green),
-                Status::Warn(_) => Style::default().fg(Color::Yellow),
-                _ => Style::default(),
-            };
-            let status = Paragraph::new(self.cur.input_status.str().to_string()).block(
-                Block::default()
-                    .borders(Borders::empty())
-                    .style(status_style)
-                    .padding(Padding::horizontal(1)),
-            );
-            f.render_widget(status, chunks[1])
+            self.render_status(f, chunks[1], &self.cur.input_status);
         }
 
         let output_style = if self.focused {
@@ -235,50 +197,16 @@ impl Page for UnixTimePage {
         );
         f.render_widget(tz_sel, chunks[4]);
 
-        let format_style = if self.focused {
-            if self.cur.item == PageItems::OutputFormat {
-                Style::default().fg(Color::Blue)
-            } else {
-                Style::default().fg(Color::Reset)
-            }
-        } else {
-            Style::default().fg(Color::DarkGray)
-        };
-
-        let output_format_max_width = chunks[0].width - 4;
-        let output_format_value = self.cur.output_format.value();
-        let output_format_start = output_format_value
-            .len()
-            .saturating_sub(output_format_max_width as usize);
-        let output_format_content = &output_format_value[output_format_start..];
-        let output_format = Paragraph::new(output_format_content).block(
-            Block::bordered()
-                .style(format_style)
-                .title("Output Format")
-                .padding(Padding::horizontal(1)),
+        self.render_input(
+            f,
+            chunks[5],
+            &self.cur.output_format,
+            PageItems::OutputFormat,
+            "Output Format",
         );
-        f.render_widget(output_format, chunks[5]);
-
-        if self.cur.edit && self.cur.item == PageItems::OutputFormat {
-            let visual_cursor = self.cur.output_format.visual_cursor() as u16;
-            let x = chunks[5].x + 2 + visual_cursor.min(output_format_max_width);
-            let y = chunks[5].y + 1;
-            f.set_cursor(x, y);
-        }
 
         if !matches!(self.cur.output_format_status, Status::None) {
-            let status_style = match self.cur.output_format_status {
-                Status::Info(_) => Style::default().fg(Color::Green),
-                Status::Warn(_) => Style::default().fg(Color::Yellow),
-                _ => Style::default(),
-            };
-            let status = Paragraph::new(self.cur.output_format_status.str().to_string()).block(
-                Block::default()
-                    .borders(Borders::empty())
-                    .style(status_style)
-                    .padding(Padding::horizontal(1)),
-            );
-            f.render_widget(status, chunks[6])
+            self.render_status(f, chunks[6], &self.cur.output_format_status);
         }
     }
 
@@ -352,10 +280,18 @@ impl UnixTimePage {
     }
 
     fn edit_start(&mut self) {
+        use PageItems::*;
+        if !matches!(self.cur.item, Input | OutputFormat) {
+            return;
+        }
         self.cur.edit = true;
     }
 
     fn edit_end(&mut self) {
+        use PageItems::*;
+        if !matches!(self.cur.item, Input | OutputFormat) {
+            return;
+        }
         self.cur.edit = false;
     }
 
@@ -438,6 +374,52 @@ impl UnixTimePage {
             self.cur.output = String::new();
             self.cur.input_status = Status::Warn("invalid input".into());
         }
+    }
+
+    fn render_input(&self, f: &mut Frame, area: Rect, input: &Input, item: PageItems, title: &str) {
+        let input_style = if self.focused {
+            if self.cur.item == item {
+                Style::default().fg(Color::Blue)
+            } else {
+                Style::default().fg(Color::Reset)
+            }
+        } else {
+            Style::default().fg(Color::DarkGray)
+        };
+
+        let input_max_width = area.width - 4;
+        let input_value = input.value();
+        let input_start = input_value.len().saturating_sub(input_max_width as usize);
+        let input_content = &input_value[input_start..];
+        let input_widget = Paragraph::new(input_content).block(
+            Block::bordered()
+                .style(input_style)
+                .title(title)
+                .padding(Padding::horizontal(1)),
+        );
+        f.render_widget(input_widget, area);
+
+        if self.cur.edit && self.cur.item == item {
+            let visual_cursor = input.visual_cursor() as u16;
+            let x = area.x + 2 + visual_cursor.min(input_max_width);
+            let y = area.y + 1;
+            f.set_cursor(x, y);
+        }
+    }
+
+    fn render_status(&self, f: &mut Frame, area: Rect, status: &Status) {
+        let status_style = match status {
+            Status::Info(_) => Style::default().fg(Color::Green),
+            Status::Warn(_) => Style::default().fg(Color::Yellow),
+            _ => Style::default(),
+        };
+        let status = Paragraph::new(status.str().to_string()).block(
+            Block::default()
+                .borders(Borders::empty())
+                .style(status_style)
+                .padding(Padding::horizontal(1)),
+        );
+        f.render_widget(status, area)
     }
 }
 
