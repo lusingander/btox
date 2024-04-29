@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
@@ -16,6 +16,8 @@ use crate::{
     widget::select::Select,
 };
 
+const DEFAUT_OUTPUT_FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.f%:z";
+
 pub struct UnixTimePage {
     focused: bool,
     cur: CurrentStatus,
@@ -26,7 +28,9 @@ struct CurrentStatus {
     input: Input,
     output: String,
     tz_sel: TimeZoneItemSelect,
-    status: Status,
+    output_format: Input,
+    input_status: Status,
+    output_format_status: Status,
     edit: bool,
 }
 
@@ -48,6 +52,7 @@ impl Status {
 
 impl UnixTimePage {
     pub fn new(focused: bool) -> UnixTimePage {
+        let output_format = Input::new(DEFAUT_OUTPUT_FORMAT.to_string());
         UnixTimePage {
             focused,
             cur: CurrentStatus {
@@ -55,7 +60,9 @@ impl UnixTimePage {
                 input: Input::default(),
                 output: String::new(),
                 tz_sel: TimeZoneItemSelect::Utc,
-                status: Status::None,
+                output_format,
+                input_status: Status::None,
+                output_format_status: Status::None,
                 edit: false,
             },
         }
@@ -63,7 +70,7 @@ impl UnixTimePage {
 }
 
 zero_indexed_enum! {
-    PageItems => [Input, Output, TimeZone]
+    PageItems => [Input, Output, TimeZone, OutputFormat]
 }
 
 zero_indexed_enum! {
@@ -153,6 +160,8 @@ impl Page for UnixTimePage {
             Constraint::Length(3),
             Constraint::Length(1),
             Constraint::Length(2),
+            Constraint::Length(3),
+            Constraint::Length(1),
         ])
         .split(area);
 
@@ -178,20 +187,20 @@ impl Page for UnixTimePage {
         );
         f.render_widget(input, chunks[0]);
 
-        if self.cur.edit {
+        if self.cur.edit && self.cur.item == PageItems::Input {
             let visual_cursor = self.cur.input.visual_cursor() as u16;
-            let x = area.x + 2 + visual_cursor.min(input_max_width);
-            let y = area.y + 1;
+            let x = chunks[0].x + 2 + visual_cursor.min(input_max_width);
+            let y = chunks[0].y + 1;
             f.set_cursor(x, y);
         }
 
-        if !matches!(self.cur.status, Status::None) {
-            let status_style = match self.cur.status {
+        if !matches!(self.cur.input_status, Status::None) {
+            let status_style = match self.cur.input_status {
                 Status::Info(_) => Style::default().fg(Color::Green),
                 Status::Warn(_) => Style::default().fg(Color::Yellow),
                 _ => Style::default(),
             };
-            let status = Paragraph::new(self.cur.status.str().to_string()).block(
+            let status = Paragraph::new(self.cur.input_status.str().to_string()).block(
                 Block::default()
                     .borders(Borders::empty())
                     .style(status_style)
@@ -225,6 +234,52 @@ impl Page for UnixTimePage {
             self.focused,
         );
         f.render_widget(tz_sel, chunks[4]);
+
+        let format_style = if self.focused {
+            if self.cur.item == PageItems::OutputFormat {
+                Style::default().fg(Color::Blue)
+            } else {
+                Style::default().fg(Color::Reset)
+            }
+        } else {
+            Style::default().fg(Color::DarkGray)
+        };
+
+        let output_format_max_width = chunks[0].width - 4;
+        let output_format_value = self.cur.output_format.value();
+        let output_format_start = output_format_value
+            .len()
+            .saturating_sub(output_format_max_width as usize);
+        let output_format_content = &output_format_value[output_format_start..];
+        let output_format = Paragraph::new(output_format_content).block(
+            Block::bordered()
+                .style(format_style)
+                .title("Output Format")
+                .padding(Padding::horizontal(1)),
+        );
+        f.render_widget(output_format, chunks[5]);
+
+        if self.cur.edit && self.cur.item == PageItems::OutputFormat {
+            let visual_cursor = self.cur.output_format.visual_cursor() as u16;
+            let x = chunks[5].x + 2 + visual_cursor.min(output_format_max_width);
+            let y = chunks[5].y + 1;
+            f.set_cursor(x, y);
+        }
+
+        if !matches!(self.cur.output_format_status, Status::None) {
+            let status_style = match self.cur.output_format_status {
+                Status::Info(_) => Style::default().fg(Color::Green),
+                Status::Warn(_) => Style::default().fg(Color::Yellow),
+                _ => Style::default(),
+            };
+            let status = Paragraph::new(self.cur.output_format_status.str().to_string()).block(
+                Block::default()
+                    .borders(Borders::empty())
+                    .style(status_style)
+                    .padding(Padding::horizontal(1)),
+            );
+            f.render_widget(status, chunks[6])
+        }
     }
 
     fn focus(&mut self) {
@@ -236,21 +291,22 @@ impl Page for UnixTimePage {
     }
 
     fn helps(&self) -> Vec<&str> {
+        use PageItems::*;
         let mut helps: Vec<&str> = Vec::new();
         if self.cur.edit {
             helps.push("<Esc> End edit");
         } else {
             helps.push("<C-n/C-p> Select item");
-            if matches!(self.cur.item, PageItems::TimeZone) {
+            if matches!(self.cur.item, TimeZone) {
                 helps.push("<Left/Right> Select current item value");
             }
-            if matches!(self.cur.item, PageItems::Input) {
+            if matches!(self.cur.item, Input | OutputFormat) {
                 helps.push("<e> Edit");
             }
-            if matches!(self.cur.item, PageItems::Input | PageItems::Output) {
+            if matches!(self.cur.item, Input | Output | OutputFormat) {
                 helps.push("<y> Copy to clipboard");
             }
-            if matches!(self.cur.item, PageItems::Input) {
+            if matches!(self.cur.item, Input | OutputFormat) {
                 helps.push("<p> Paste from clipboard");
             }
         }
@@ -277,6 +333,7 @@ impl UnixTimePage {
             }
             PageItems::Input => {}
             PageItems::Output => {}
+            PageItems::OutputFormat => {}
         }
     }
 
@@ -290,6 +347,7 @@ impl UnixTimePage {
             }
             PageItems::Input => {}
             PageItems::Output => {}
+            PageItems::OutputFormat => {}
         }
     }
 
@@ -303,31 +361,49 @@ impl UnixTimePage {
 
     fn edit(&mut self, key: crossterm::event::KeyEvent) {
         let event = &crossterm::event::Event::Key(key);
-        self.cur.input.handle_event(event);
+
+        match self.cur.item {
+            PageItems::Input => {
+                self.cur.input.handle_event(event);
+            }
+            PageItems::OutputFormat => {
+                self.cur.output_format.handle_event(event);
+            }
+            _ => {}
+        };
 
         self.update_output();
     }
 
     fn copy_to_clipboard(&self) -> Option<Msg> {
-        if !matches!(self.cur.item, PageItems::Input | PageItems::Output) {
+        use PageItems::*;
+        if !matches!(self.cur.item, Input | Output | OutputFormat) {
             return None;
         }
 
         let text = match self.cur.item {
-            PageItems::Input => self.cur.input.value(),
-            PageItems::Output => self.cur.output.as_str(),
+            Input => self.cur.input.value(),
+            Output => self.cur.output.as_str(),
+            OutputFormat => self.cur.output_format.value(),
             _ => "",
         };
         util::copy_to_clipboard(text)
     }
 
     fn paste_from_clipboard(&mut self) {
-        if !matches!(self.cur.item, PageItems::Input) {
+        use PageItems::*;
+        if !matches!(self.cur.item, Input | OutputFormat) {
             return;
         }
 
         let text = util::paste_from_clipboard().unwrap();
-        self.cur.input = self.cur.input.clone().with_value(text);
+        match self.cur.item {
+            Input => self.cur.input = self.cur.input.clone().with_value(text),
+            OutputFormat => {
+                self.cur.output_format = self.cur.output_format.clone().with_value(text)
+            }
+            _ => {}
+        }
 
         self.update_output();
     }
@@ -336,20 +412,31 @@ impl UnixTimePage {
         let s = self.cur.input.value();
         if s.is_empty() {
             self.cur.output = String::new();
-            self.cur.status = Status::None;
+            self.cur.input_status = Status::None;
         } else if let Some(dt) = parse_as_unix_timestamp(s) {
-            self.cur.output = match self.cur.tz_sel {
-                TimeZoneItemSelect::Utc => dt.datetime.with_timezone(&Utc).to_string(),
-                TimeZoneItemSelect::Local => dt.datetime.with_timezone(&chrono::Local).to_string(),
-            };
+            let f = self.cur.output_format.value();
+            if is_valid_datetime_format(f) {
+                self.cur.output = match self.cur.tz_sel {
+                    TimeZoneItemSelect::Utc => {
+                        dt.datetime.with_timezone(&Utc).format(f).to_string()
+                    }
+                    TimeZoneItemSelect::Local => {
+                        dt.datetime.with_timezone(&Local).format(f).to_string()
+                    }
+                };
+                self.cur.output_format_status = Status::None;
+            } else {
+                self.cur.output = String::new();
+                self.cur.output_format_status = Status::Warn("invalid format".into());
+            }
             let msg = format!("valid unix timestamp ({:?})", dt.resolution);
-            self.cur.status = Status::Info(msg);
+            self.cur.input_status = Status::Info(msg);
         } else if let Some(dt) = parse_as_datetime(s) {
             self.cur.output = dt.timestamp().to_string();
-            self.cur.status = Status::Info("valid datetime".into());
+            self.cur.input_status = Status::Info("valid datetime".into());
         } else {
             self.cur.output = String::new();
-            self.cur.status = Status::Warn("invalid input".into());
+            self.cur.input_status = Status::Warn("invalid input".into());
         }
     }
 }
@@ -416,6 +503,11 @@ fn parse_as_datetime(s: &str) -> Option<DateTime<Utc>> {
     s.parse::<DateTime<Utc>>().ok()
 }
 
+fn is_valid_datetime_format(s: &str) -> bool {
+    // https://github.com/chronotope/chrono/issues/47#issuecomment-320471394
+    chrono::format::StrftimeItems::new(s).all(|item| item != chrono::format::Item::Error)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -450,5 +542,13 @@ mod tests {
 
     fn parse_from_rfc3339(s: &str) -> Option<DateTime<Utc>> {
         Some(DateTime::parse_from_rfc3339(s).unwrap().to_utc())
+    }
+
+    #[test]
+    fn test_is_valid_datetime_format() {
+        assert!(is_valid_datetime_format("%Y-%m-%dT%H:%M:%S%.f%:z"));
+        assert!(is_valid_datetime_format("%Y-%m-%d"));
+        assert!(!is_valid_datetime_format("%Y-%m-%dT%H:%M:%S%.f%:z%"));
+        assert!(!is_valid_datetime_format("%"));
     }
 }
