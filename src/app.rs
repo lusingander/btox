@@ -4,11 +4,12 @@ use crossterm::event::{Event, KeyCode};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Layout, Margin, Rect},
+    layout::{Margin, Rect},
     style::{Color, Modifier, Style},
     text::Line,
     Frame, Terminal,
 };
+use ratatui_macros::{horizontal, vertical};
 
 use crate::{
     key_code, key_code_char,
@@ -132,14 +133,14 @@ impl App {
     }
 
     fn render(&self, f: &mut Frame) {
-        let chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(f.size());
+        let chunks = vertical![>=0, ==1].split(f.size());
 
         self.render_panes(f, chunks[0]);
         self.render_notification(f, chunks[1]);
     }
 
     fn render_panes(&self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::horizontal([Constraint::Length(20), Constraint::Min(0)]).split(area);
+        let chunks = horizontal![==20, >=0].split(area);
 
         self.list_pane.render(f, chunks[0]);
         self.tool_pane.render(f, chunks[1]);

@@ -2,11 +2,12 @@ use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use md5::{Digest, Md5};
 use ratatui::{
-    layout::{Constraint, Layout, Rect},
+    layout::Rect,
     style::{Color, Style},
     widgets::{Block, Padding, Paragraph, Wrap},
     Frame,
 };
+use ratatui_macros::vertical;
 use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
@@ -143,13 +144,7 @@ impl Page for HashPage {
     }
 
     fn render(&self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::vertical([
-            Constraint::Length(2),
-            Constraint::Length(2),
-            Constraint::Min(0),
-            Constraint::Length(5),
-        ])
-        .split(area);
+        let chunks = vertical![==2, ==2, >=0, ==5].split(area);
 
         let algo_sel = Select::new(
             AlgoItemSelect::strings_vec(),

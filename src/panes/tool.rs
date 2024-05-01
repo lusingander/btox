@@ -1,10 +1,11 @@
 use ratatui::{
-    layout::{Constraint, Layout, Margin, Rect},
+    layout::{Margin, Rect},
     style::{Color, Style},
     text::Line,
     widgets::{Block, BorderType, Borders, Paragraph},
     Frame,
 };
+use ratatui_macros::vertical;
 
 use crate::{
     msg::Msg,
@@ -63,11 +64,8 @@ impl Pane for ToolPane {
     fn render(&self, f: &mut Frame, area: Rect) {
         let help_lines = self.help_lines(area.width - 2);
 
-        let chunks = Layout::vertical([
-            Constraint::Min(0),
-            Constraint::Length(help_lines.len() as u16),
-        ])
-        .split(area);
+        let help_lines_len = help_lines.len() as u16;
+        let chunks = vertical![>=0, ==help_lines_len].split(area);
 
         let (border_type, block_style) = if self.focused {
             (BorderType::Rounded, Style::default().fg(Color::Blue))

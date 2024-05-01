@@ -2,11 +2,12 @@ use chrono::{DateTime, Local, Utc};
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
-    layout::{Constraint, Layout, Rect},
+    layout::Rect,
     style::{Color, Style},
     widgets::{Block, Borders, Padding, Paragraph},
     Frame,
 };
+use ratatui_macros::vertical;
 use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
@@ -154,16 +155,7 @@ impl Page for UnixTimePage {
     }
 
     fn render(&self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::vertical([
-            Constraint::Length(3),
-            Constraint::Length(2),
-            Constraint::Length(3),
-            Constraint::Length(1),
-            Constraint::Length(2),
-            Constraint::Length(3),
-            Constraint::Length(1),
-        ])
-        .split(area);
+        let chunks = vertical![==3, ==2, ==3, ==1, ==2, ==3, ==1].split(area);
 
         self.render_input(f, chunks[0], &self.cur.input, PageItems::Input, "Input");
 

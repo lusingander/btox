@@ -11,6 +11,7 @@ crossterm = "0.27.0"
 itsuki = "0.1.2"
 md-5 = "0.10.6"
 ratatui = { version = "0.26.1", features = ["all-widgets"] }
+ratatui-macros = "0.2.4"
 sha1 = "0.10.6"
 sha2 = "0.10.8"
 tui-input = "0.8.0"

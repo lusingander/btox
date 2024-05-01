@@ -1,12 +1,13 @@
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
-    layout::{Constraint, Layout, Rect},
+    layout::Rect,
     style::{Color, Style},
     text::Line,
     widgets::{Block, Padding, Paragraph},
     Frame,
 };
+use ratatui_macros::vertical;
 use uuid::Uuid;
 
 use crate::{
@@ -148,14 +149,7 @@ impl Page for UuidPage {
     }
 
     fn render(&self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::vertical([
-            Constraint::Length(2),
-            Constraint::Length(2),
-            Constraint::Length(2),
-            Constraint::Length(2),
-            Constraint::Min(0),
-        ])
-        .split(area);
+        let chunks = vertical![==2, ==2, ==2, ==2, >=0].split(area);
 
         let dash_sel = Select::new(
             DashItemSelect::strings_vec(),
