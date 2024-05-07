@@ -281,12 +281,18 @@ impl UuidPage {
     }
 
     fn scroll_down(&mut self) {
+        if !matches!(self.cur.item, PageItems::Output) || self.ids.is_empty() {
+            return;
+        }
         if self.cur.output_state.offset < self.ids.len() - 1 {
             self.cur.output_state.offset += 1;
         }
     }
 
     fn scroll_up(&mut self) {
+        if !matches!(self.cur.item, PageItems::Output) || self.ids.is_empty() {
+            return;
+        }
         if self.cur.output_state.offset > 0 {
             self.cur.output_state.offset -= 1;
         }
