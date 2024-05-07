@@ -11,7 +11,10 @@ use ratatui_macros::vertical;
 use uuid::Uuid;
 
 use crate::{
-    key_code, key_code_char, msg::Msg, pages::page::Page, pages::util, widget::select::Select,
+    key_code, key_code_char,
+    msg::Msg,
+    pages::{page::Page, util},
+    widget::{scroll::ScrollBar, select::Select},
 };
 
 const COUNT_MAX: usize = 100;
@@ -29,6 +32,7 @@ struct CurrentStatus {
     case_sel: CaseItemSelect,
     ver_sel: VersionItemSelect,
     count: usize,
+    output_offset: usize,
 }
 
 impl UuidPage {
@@ -41,6 +45,7 @@ impl UuidPage {
                 case_sel: CaseItemSelect::Lowercase,
                 ver_sel: VersionItemSelect::V4,
                 count: 1,
+                output_offset: 0,
             },
             ids: Vec::new(),
         }
@@ -113,6 +118,8 @@ impl Page for UuidPage {
             key_code_char!('h') | key_code!(KeyCode::Left) => {
                 Some(Msg::UuidPageCurrentItemSelectPrev)
             }
+            key_code_char!('j') => Some(Msg::UuidPageScrollDown),
+            key_code_char!('k') => Some(Msg::UuidPageScrollUp),
             key_code_char!('y') => Some(Msg::UuidPageCopy),
             key_code_char!('p') => Some(Msg::UuidPagePaste),
             key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
@@ -133,6 +140,12 @@ impl Page for UuidPage {
             }
             Msg::UuidPageCurrentItemSelectPrev => {
                 self.current_item_select_prev();
+            }
+            Msg::UuidPageScrollDown => {
+                self.scroll_down();
+            }
+            Msg::UuidPageScrollUp => {
+                self.scroll_up();
             }
             Msg::UuidPageGenerate => {
                 self.generate_uuid();
@@ -183,27 +196,7 @@ impl Page for UuidPage {
         );
         f.render_widget(count_sel, chunks[3]);
 
-        let output_style = if self.focused {
-            if self.cur.item == PageItems::Output {
-                Style::default().fg(Color::Blue)
-            } else {
-                Style::default().fg(Color::Reset)
-            }
-        } else {
-            Style::default().fg(Color::DarkGray)
-        };
-
-        let uuids: Vec<Line<'_>> = self
-            .ids
-            .iter()
-            .map(|id| Line::raw(self.format_uuid(id)))
-            .collect();
-        let output = Paragraph::new(uuids).block(
-            Block::bordered()
-                .style(output_style)
-                .padding(Padding::horizontal(1)),
-        );
-        f.render_widget(output, chunks[4]);
+        self.render_output(f, chunks[4]);
     }
 
     fn focus(&mut self) {
@@ -290,6 +283,18 @@ impl UuidPage {
         }
     }
 
+    fn scroll_down(&mut self) {
+        if self.cur.output_offset < self.ids.len() - 1 {
+            self.cur.output_offset += 1;
+        }
+    }
+
+    fn scroll_up(&mut self) {
+        if self.cur.output_offset > 0 {
+            self.cur.output_offset -= 1;
+        }
+    }
+
     fn generate_uuid(&mut self) {
         self.ids = (0..self.cur.count).map(|_| Uuid::new_v4()).collect();
     }
@@ -346,5 +351,38 @@ impl UuidPage {
             }
         };
         s.to_string()
+    }
+
+    fn render_output(&self, f: &mut Frame, area: Rect) {
+        let output_style = if self.focused {
+            if self.cur.item == PageItems::Output {
+                Style::default().fg(Color::Blue)
+            } else {
+                Style::default().fg(Color::Reset)
+            }
+        } else {
+            Style::default().fg(Color::DarkGray)
+        };
+
+        let max_output_count = area.height as usize - 2;
+        let uuids: Vec<Line<'_>> = self
+            .ids
+            .iter()
+            .skip(self.cur.output_offset)
+            .take(max_output_count)
+            .map(|id| Line::raw(self.format_uuid(id)))
+            .collect();
+        let output = Paragraph::new(uuids).block(
+            Block::bordered()
+                .style(output_style)
+                .padding(Padding::horizontal(1)),
+        );
+        f.render_widget(output, area);
+
+        if self.ids.len() > max_output_count {
+            let scrollbar_area = Rect::new(area.right() - 2, area.top() + 1, 1, area.height - 2);
+            let scrollbar = ScrollBar::new(self.ids.len(), self.cur.output_offset);
+            f.render_widget(scrollbar, scrollbar_area);
+        }
     }
 }
