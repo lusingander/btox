@@ -161,7 +161,7 @@ impl Page for UuidPage {
         None
     }
 
-    fn render(&self, f: &mut Frame, area: Rect) {
+    fn render(&mut self, f: &mut Frame, area: Rect) {
         let chunks = vertical![==2, ==2, ==2, ==2, >=0].split(area);
 
         let dash_sel = Select::new(

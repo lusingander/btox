@@ -143,7 +143,7 @@ impl Page for HashPage {
         None
     }
 
-    fn render(&self, f: &mut Frame, area: Rect) {
+    fn render(&mut self, f: &mut Frame, area: Rect) {
         let chunks = vertical![==2, ==2, >=0, ==5].split(area);
 
         let algo_sel = Select::new(

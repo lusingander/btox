@@ -132,14 +132,14 @@ impl App {
         }
     }
 
-    fn render(&self, f: &mut Frame) {
+    fn render(&mut self, f: &mut Frame) {
         let chunks = vertical![>=0, ==1].split(f.size());
 
         self.render_panes(f, chunks[0]);
         self.render_notification(f, chunks[1]);
     }
 
-    fn render_panes(&self, f: &mut Frame, area: Rect) {
+    fn render_panes(&mut self, f: &mut Frame, area: Rect) {
         let chunks = horizontal![==20, >=0].split(area);
 
         self.list_pane.render(f, chunks[0]);

@@ -81,7 +81,7 @@ impl Pane for ListPane {
         None
     }
 
-    fn render(&self, f: &mut Frame, area: Rect) {
+    fn render(&mut self, f: &mut Frame, area: Rect) {
         let items = PageType::strings_vec()
             .into_iter()
             .enumerate()

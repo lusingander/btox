@@ -154,7 +154,7 @@ impl Page for UnixTimePage {
         None
     }
 
-    fn render(&self, f: &mut Frame, area: Rect) {
+    fn render(&mut self, f: &mut Frame, area: Rect) {
         let chunks = vertical![==3, ==2, ==3, ==1, ==2, ==3, ==1].split(area);
 
         self.render_input(f, chunks[0], &self.cur.input, PageItems::Input, "Input");

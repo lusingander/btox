@@ -61,11 +61,17 @@ impl Pane for ToolPane {
         None
     }
 
-    fn render(&self, f: &mut Frame, area: Rect) {
+    fn render(&mut self, f: &mut Frame, area: Rect) {
         let help_lines = self.help_lines(area.width - 2);
 
         let help_lines_len = help_lines.len() as u16;
         let chunks = vertical![>=0, ==help_lines_len].split(area);
+
+        if self.help {
+            let help_area = chunks[1].inner(&Margin::new(1, 0));
+            let help = Paragraph::new(help_lines);
+            f.render_widget(help, help_area);
+        }
 
         let (border_type, block_style) = if self.focused {
             (BorderType::Rounded, Style::default().fg(Color::Blue))
@@ -81,12 +87,6 @@ impl Pane for ToolPane {
 
         let page_content_area = chunks[0].inner(&Margin::new(2, 1));
         self.page.render(f, page_content_area);
-
-        if self.help {
-            let help_area = chunks[1].inner(&Margin::new(1, 0));
-            let help = Paragraph::new(help_lines);
-            f.render_widget(help, help_area);
-        }
     }
 
     fn focus(&mut self) {

@@ -112,7 +112,7 @@ impl Page for NumberBasePage {
         None
     }
 
-    fn render(&self, f: &mut Frame, area: Rect) {
+    fn render(&mut self, f: &mut Frame, area: Rect) {
         let chunks = vertical![==3, ==1, ==3, ==1, ==3, ==1, ==3, ==1].split(area);
 
         self.render_input(f, chunks[0], &self.cur.binary_input, PageItems::Binary);
