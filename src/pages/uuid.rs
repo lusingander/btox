@@ -115,8 +115,8 @@ impl Page for UuidPage {
             key_code_char!('h') | key_code!(KeyCode::Left) => {
                 Some(Msg::UuidPageCurrentItemSelectPrev)
             }
-            key_code_char!('j') => Some(Msg::UuidPageScrollDown),
-            key_code_char!('k') => Some(Msg::UuidPageScrollUp),
+            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UuidPageScrollDown),
+            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UuidPageScrollUp),
             key_code_char!('y') => Some(Msg::UuidPageCopy),
             key_code_char!('p') => Some(Msg::UuidPagePaste),
             key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
@@ -212,6 +212,7 @@ impl Page for UuidPage {
         }
         helps.push("<Enter> Generate uuid");
         if matches!(self.cur.item, PageItems::Output) {
+            helps.push("<Down/Up> Scroll down/up");
             helps.push("<y> Copy to clipboard");
             helps.push("<p> Paste from clipboard");
         }
