@@ -1,12 +1,6 @@
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
-use ratatui::{
-    layout::Rect,
-    style::{Color, Style},
-    text::Line,
-    widgets::{Block, Padding, Paragraph},
-    Frame,
-};
+use ratatui::{layout::Rect, text::Line, Frame};
 use ratatui_macros::vertical;
 use uuid::Uuid;
 
@@ -14,7 +8,10 @@ use crate::{
     key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
-    widget::{scroll::ScrollBar, select::Select},
+    widget::{
+        scroll::{ScrollOutput, ScrollOutputState},
+        select::Select,
+    },
 };
 
 const COUNT_MAX: usize = 100;
@@ -32,7 +29,7 @@ struct CurrentStatus {
     case_sel: CaseItemSelect,
     ver_sel: VersionItemSelect,
     count: usize,
-    output_offset: usize,
+    output_state: ScrollOutputState,
 }
 
 impl UuidPage {
@@ -45,7 +42,7 @@ impl UuidPage {
                 case_sel: CaseItemSelect::Lowercase,
                 ver_sel: VersionItemSelect::V4,
                 count: 1,
-                output_offset: 0,
+                output_state: ScrollOutputState::default(),
             },
             ids: Vec::new(),
         }
@@ -284,14 +281,14 @@ impl UuidPage {
     }
 
     fn scroll_down(&mut self) {
-        if self.cur.output_offset < self.ids.len() - 1 {
-            self.cur.output_offset += 1;
+        if self.cur.output_state.offset < self.ids.len() - 1 {
+            self.cur.output_state.offset += 1;
         }
     }
 
     fn scroll_up(&mut self) {
-        if self.cur.output_offset > 0 {
-            self.cur.output_offset -= 1;
+        if self.cur.output_state.offset > 0 {
+            self.cur.output_state.offset -= 1;
         }
     }
 
@@ -353,36 +350,13 @@ impl UuidPage {
         s.to_string()
     }
 
-    fn render_output(&self, f: &mut Frame, area: Rect) {
-        let output_style = if self.focused {
-            if self.cur.item == PageItems::Output {
-                Style::default().fg(Color::Blue)
-            } else {
-                Style::default().fg(Color::Reset)
-            }
-        } else {
-            Style::default().fg(Color::DarkGray)
-        };
-
-        let max_output_count = area.height as usize - 2;
-        let uuids: Vec<Line<'_>> = self
+    fn render_output(&mut self, f: &mut Frame, area: Rect) {
+        let lines: Vec<Line> = self
             .ids
             .iter()
-            .skip(self.cur.output_offset)
-            .take(max_output_count)
             .map(|id| Line::raw(self.format_uuid(id)))
             .collect();
-        let output = Paragraph::new(uuids).block(
-            Block::bordered()
-                .style(output_style)
-                .padding(Padding::horizontal(1)),
-        );
-        f.render_widget(output, area);
-
-        if self.ids.len() > max_output_count {
-            let scrollbar_area = Rect::new(area.right() - 2, area.top() + 1, 1, area.height - 2);
-            let scrollbar = ScrollBar::new(self.ids.len(), self.cur.output_offset);
-            f.render_widget(scrollbar, scrollbar_area);
-        }
+        let output = ScrollOutput::new(lines, self.focused, self.cur.item == PageItems::Output);
+        f.render_stateful_widget(output, area, &mut self.cur.output_state);
     }
 }
