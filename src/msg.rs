@@ -30,6 +30,8 @@ pub enum Msg {
     HashPageSelectPrevItem,
     HashPageCurrentItemSelectNext,
     HashPageCurrentItemSelectPrev,
+    HashPageScrollDown,
+    HashPageScrollUp,
     HashPageCopy,
     HashPagePaste,
 

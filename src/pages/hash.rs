@@ -12,7 +12,13 @@ use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
 use crate::{
-    key_code, key_code_char, msg::Msg, pages::page::Page, pages::util, widget::select::Select,
+    key_code, key_code_char,
+    msg::Msg,
+    pages::{page::Page, util},
+    widget::{
+        scroll::{ScrollOutput, ScrollOutputState},
+        select::Select,
+    },
 };
 
 pub struct HashPage {
@@ -25,6 +31,7 @@ struct CurrentStatus {
     algo_sel: AlgoItemSelect,
     enc_sel: EncodeItemSelect,
     input: String,
+    input_state: ScrollOutputState,
     output: String,
 }
 
@@ -40,6 +47,7 @@ impl HashPage {
                 algo_sel,
                 enc_sel: EncodeItemSelect::Utf8,
                 input,
+                input_state: ScrollOutputState::default(),
                 output,
             },
         }
@@ -112,6 +120,8 @@ impl Page for HashPage {
             key_code_char!('h') | key_code!(KeyCode::Left) => {
                 Some(Msg::HashPageCurrentItemSelectPrev)
             }
+            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::HashPageScrollDown),
+            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::HashPageScrollUp),
             key_code_char!('y') => Some(Msg::HashPageCopy),
             key_code_char!('p') => Some(Msg::HashPagePaste),
             _ => None,
@@ -131,6 +141,12 @@ impl Page for HashPage {
             }
             Msg::HashPageCurrentItemSelectPrev => {
                 self.current_item_select_prev();
+            }
+            Msg::HashPageScrollDown => {
+                self.scroll_down();
+            }
+            Msg::HashPageScrollUp => {
+                self.scroll_up();
             }
             Msg::HashPageCopy => {
                 return self.copy_to_clipboard();
@@ -162,26 +178,9 @@ impl Page for HashPage {
         );
         f.render_widget(enc_sel, chunks[1]);
 
-        let input_style = if self.focused {
-            if self.cur.item == PageItems::Input {
-                Style::default().fg(Color::Blue)
-            } else {
-                Style::default().fg(Color::Reset)
-            }
-        } else {
-            Style::default().fg(Color::DarkGray)
-        };
-
         let input_text = self.cur.input.clone();
-        let input = Paragraph::new(input_text)
-            .block(
-                Block::bordered()
-                    .style(input_style)
-                    .title("Input")
-                    .padding(Padding::horizontal(1)),
-            )
-            .wrap(Wrap { trim: false });
-        f.render_widget(input, chunks[2]);
+        let input = ScrollOutput::new(input_text, self.focused, self.cur.item == PageItems::Input);
+        f.render_stateful_widget(input, chunks[2], &mut self.cur.input_state);
 
         let output_style = if self.focused {
             if self.cur.item == PageItems::Output {
@@ -223,6 +222,7 @@ impl Page for HashPage {
             helps.push("<y> Copy to clipboard");
         }
         if matches!(self.cur.item, PageItems::Input) {
+            helps.push("<Down/Up> Scroll down/up");
             helps.push("<p> Paste from clipboard");
         }
         helps
@@ -273,6 +273,24 @@ impl HashPage {
             }
             PageItems::Input => {}
             PageItems::Output => {}
+        }
+    }
+
+    fn scroll_down(&mut self) {
+        if !matches!(self.cur.item, PageItems::Input) || self.cur.input.is_empty() {
+            return;
+        }
+        if self.cur.input_state.offset < self.cur.input.lines().count() - 1 {
+            self.cur.input_state.offset += 1;
+        }
+    }
+
+    fn scroll_up(&mut self) {
+        if !matches!(self.cur.item, PageItems::Input) || self.cur.input.is_empty() {
+            return;
+        }
+        if self.cur.input_state.offset > 0 {
+            self.cur.input_state.offset -= 1;
         }
     }
 
