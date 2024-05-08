@@ -2,7 +2,7 @@ use ratatui::{
     buffer::Buffer,
     layout::Rect,
     style::{Color, Style},
-    text::Line,
+    text::{Line, Text},
     widgets::{Block, Padding, Paragraph, StatefulWidget, Widget},
 };
 
@@ -64,18 +64,18 @@ impl ScrollBar {
 }
 
 pub struct ScrollOutput<'a> {
-    lines: Vec<Line<'a>>,
-    lines_len: usize,
+    text: Text<'a>,
     focused: bool,
     selected: bool,
 }
 
 impl<'a> ScrollOutput<'a> {
-    pub fn new(lines: Vec<Line>, focused: bool, selected: bool) -> ScrollOutput {
-        let lines_len = lines.len();
+    pub fn new<T>(text: T, focused: bool, selected: bool) -> ScrollOutput<'a>
+    where
+        T: Into<Text<'a>>,
+    {
         ScrollOutput {
-            lines,
-            lines_len,
+            text: text.into(),
             focused,
             selected,
         }
@@ -114,13 +114,13 @@ impl<'a> StatefulWidget for ScrollOutput<'a> {
 
         let max_content_height = area.height as usize - 2;
 
-        let max_offset = self.lines_len.saturating_sub(max_content_height);
+        let max_offset = self.text.height().saturating_sub(max_content_height);
         if state.offset > max_offset {
             state.offset = max_offset;
         }
 
         let content: Vec<Line> = self
-            .lines
+            .text
             .iter()
             .skip(state.offset)
             .take(max_content_height)
@@ -134,9 +134,9 @@ impl<'a> StatefulWidget for ScrollOutput<'a> {
         );
         output.render(area, buf);
 
-        if self.lines_len > max_content_height {
+        if self.text.height() > max_content_height {
             let scrollbar_area = Rect::new(area.right() - 2, area.top() + 1, 1, area.height - 2);
-            let scrollbar = ScrollBar::new(self.lines_len, state.offset);
+            let scrollbar = ScrollBar::new(self.text.height(), state.offset);
             scrollbar.render(scrollbar_area, buf);
         }
     }
