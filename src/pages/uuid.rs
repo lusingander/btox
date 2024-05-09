@@ -25,7 +25,7 @@ pub struct UuidPage {
 
 struct CurrentStatus {
     item: PageItems,
-    dash_sel: DashItemSelect,
+    hyphen_sel: HyphenItemSelect,
     case_sel: CaseItemSelect,
     ver_sel: VersionItemSelect,
     count: usize,
@@ -37,8 +37,8 @@ impl UuidPage {
         UuidPage {
             focused,
             cur: CurrentStatus {
-                item: PageItems::Dash,
-                dash_sel: DashItemSelect::WithDash,
+                item: PageItems::Hyphen,
+                hyphen_sel: HyphenItemSelect::WithHyphen,
                 case_sel: CaseItemSelect::Lowercase,
                 ver_sel: VersionItemSelect::V4,
                 count: 1,
@@ -50,18 +50,18 @@ impl UuidPage {
 }
 
 zero_indexed_enum! {
-    PageItems => [Dash, Case, Version, Count, Output]
+    PageItems => [Hyphen, Case, Version, Count, Output]
 }
 
 zero_indexed_enum! {
-    DashItemSelect => [WithDash, WithoutDash]
+    HyphenItemSelect => [WithHyphen, WithoutHyphen]
 }
 
-impl DashItemSelect {
+impl HyphenItemSelect {
     fn str(&self) -> &str {
         match self {
-            DashItemSelect::WithDash => "With dash",
-            DashItemSelect::WithoutDash => "Without dash",
+            HyphenItemSelect::WithHyphen => "With hyphen",
+            HyphenItemSelect::WithoutHyphen => "Without hyphen",
         }
     }
 
@@ -161,13 +161,13 @@ impl Page for UuidPage {
     fn render(&mut self, f: &mut Frame, area: Rect) {
         let chunks = vertical![==2, ==2, ==2, ==2, >=0].split(area);
 
-        let dash_sel = Select::new(
-            DashItemSelect::strings_vec(),
-            self.cur.dash_sel.val(),
-            self.cur.item == PageItems::Dash,
+        let hyphen_sel = Select::new(
+            HyphenItemSelect::strings_vec(),
+            self.cur.hyphen_sel.val(),
+            self.cur.item == PageItems::Hyphen,
             self.focused,
         );
-        f.render_widget(dash_sel, chunks[0]);
+        f.render_widget(hyphen_sel, chunks[0]);
 
         let case_sel = Select::new(
             CaseItemSelect::strings_vec(),
@@ -231,9 +231,9 @@ impl UuidPage {
 
     fn current_item_select_next(&mut self) {
         match self.cur.item {
-            PageItems::Dash => {
-                if self.cur.dash_sel.val() < DashItemSelect::len() - 1 {
-                    self.cur.dash_sel = self.cur.dash_sel.next();
+            PageItems::Hyphen => {
+                if self.cur.hyphen_sel.val() < HyphenItemSelect::len() - 1 {
+                    self.cur.hyphen_sel = self.cur.hyphen_sel.next();
                 }
             }
             PageItems::Case => {
@@ -257,9 +257,9 @@ impl UuidPage {
 
     fn current_item_select_prev(&mut self) {
         match self.cur.item {
-            PageItems::Dash => {
-                if self.cur.dash_sel.val() > 0 {
-                    self.cur.dash_sel = self.cur.dash_sel.prev();
+            PageItems::Hyphen => {
+                if self.cur.hyphen_sel.val() > 0 {
+                    self.cur.hyphen_sel = self.cur.hyphen_sel.prev();
                 }
             }
             PageItems::Case => {
@@ -340,17 +340,17 @@ impl UuidPage {
 
     fn format_uuid(&self, id: &Uuid) -> String {
         let mut buf = Uuid::encode_buffer();
-        let s = match (self.cur.dash_sel, self.cur.case_sel) {
-            (DashItemSelect::WithDash, CaseItemSelect::Lowercase) => {
+        let s = match (self.cur.hyphen_sel, self.cur.case_sel) {
+            (HyphenItemSelect::WithHyphen, CaseItemSelect::Lowercase) => {
                 id.hyphenated().encode_lower(&mut buf)
             }
-            (DashItemSelect::WithDash, CaseItemSelect::Uppercase) => {
+            (HyphenItemSelect::WithHyphen, CaseItemSelect::Uppercase) => {
                 id.hyphenated().encode_upper(&mut buf)
             }
-            (DashItemSelect::WithoutDash, CaseItemSelect::Lowercase) => {
+            (HyphenItemSelect::WithoutHyphen, CaseItemSelect::Lowercase) => {
                 id.simple().encode_lower(&mut buf)
             }
-            (DashItemSelect::WithoutDash, CaseItemSelect::Uppercase) => {
+            (HyphenItemSelect::WithoutHyphen, CaseItemSelect::Uppercase) => {
                 id.simple().encode_upper(&mut buf)
             }
         };
