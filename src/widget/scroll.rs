@@ -67,6 +67,7 @@ pub struct ScrollOutput<'a> {
     text: Text<'a>,
     focused: bool,
     selected: bool,
+    title: &'a str,
 }
 
 impl<'a> ScrollOutput<'a> {
@@ -78,7 +79,13 @@ impl<'a> ScrollOutput<'a> {
             text: text.into(),
             focused,
             selected,
+            title: "",
         }
+    }
+
+    pub fn title(mut self, title: &'a str) -> Self {
+        self.title = title;
+        self
     }
 }
 
@@ -130,6 +137,7 @@ impl<'a> StatefulWidget for ScrollOutput<'a> {
         let output = Paragraph::new(content).block(
             Block::bordered()
                 .style(style)
+                .title(self.title)
                 .padding(Padding::horizontal(1)),
         );
         output.render(area, buf);

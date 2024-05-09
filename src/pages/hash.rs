@@ -179,7 +179,8 @@ impl Page for HashPage {
         f.render_widget(enc_sel, chunks[1]);
 
         let input_text = self.cur.input.clone();
-        let input = ScrollOutput::new(input_text, self.focused, self.cur.item == PageItems::Input);
+        let input = ScrollOutput::new(input_text, self.focused, self.cur.item == PageItems::Input)
+            .title("Input");
         f.render_stateful_widget(input, chunks[2], &mut self.cur.input_state);
 
         let output_style = if self.focused {
