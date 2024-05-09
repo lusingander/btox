@@ -97,6 +97,15 @@ impl ScrollOutputState {
     pub fn new(offset: usize) -> ScrollOutputState {
         ScrollOutputState { offset }
     }
+
+    pub fn scroll_down(&mut self) {
+        // no need to check max offset because it's already handled in render
+        self.offset = self.offset.saturating_add(1);
+    }
+
+    pub fn scroll_up(&mut self) {
+        self.offset = self.offset.saturating_sub(1);
+    }
 }
 
 impl Default for ScrollOutputState {

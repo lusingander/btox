@@ -281,18 +281,14 @@ impl HashPage {
         if !matches!(self.cur.item, PageItems::Input) || self.cur.input.is_empty() {
             return;
         }
-        if self.cur.input_state.offset < self.cur.input.lines().count() - 1 {
-            self.cur.input_state.offset += 1;
-        }
+        self.cur.input_state.scroll_down();
     }
 
     fn scroll_up(&mut self) {
         if !matches!(self.cur.item, PageItems::Input) || self.cur.input.is_empty() {
             return;
         }
-        if self.cur.input_state.offset > 0 {
-            self.cur.input_state.offset -= 1;
-        }
+        self.cur.input_state.scroll_up();
     }
 
     fn copy_to_clipboard(&self) -> Option<Msg> {

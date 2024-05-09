@@ -285,18 +285,14 @@ impl UuidPage {
         if !matches!(self.cur.item, PageItems::Output) || self.ids.is_empty() {
             return;
         }
-        if self.cur.output_state.offset < self.ids.len() - 1 {
-            self.cur.output_state.offset += 1;
-        }
+        self.cur.output_state.scroll_down();
     }
 
     fn scroll_up(&mut self) {
         if !matches!(self.cur.item, PageItems::Output) || self.ids.is_empty() {
             return;
         }
-        if self.cur.output_state.offset > 0 {
-            self.cur.output_state.offset -= 1;
-        }
+        self.cur.output_state.scroll_up();
     }
 
     fn generate_uuid(&mut self) {
