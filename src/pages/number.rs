@@ -9,7 +9,12 @@ use ratatui::{
 use ratatui_macros::vertical;
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{key_code, key_code_char, msg::Msg, pages::page::Page, pages::util};
+use crate::{
+    key_code, key_code_char,
+    msg::Msg,
+    pages::{page::Page, util},
+    widget::select::Select,
+};
 
 pub struct NumberBasePage {
     focused: bool,
@@ -26,6 +31,7 @@ struct CurrentStatus {
     octal_status: String,
     decimal_status: String,
     hex_status: String,
+    case_sel: CaseItemSelect,
     edit: bool,
 }
 
@@ -43,6 +49,7 @@ impl NumberBasePage {
                 octal_status: String::new(),
                 decimal_status: String::new(),
                 hex_status: String::new(),
+                case_sel: CaseItemSelect::Lowercase,
                 edit: false,
             },
         }
@@ -50,7 +57,7 @@ impl NumberBasePage {
 }
 
 zero_indexed_enum! {
-    PageItems => [Binary, Octal, Decimal, Hexadecimal]
+    PageItems => [Binary, Octal, Decimal, Hexadecimal, Case]
 }
 
 impl PageItems {
@@ -60,7 +67,25 @@ impl PageItems {
             PageItems::Octal => "Octal",
             PageItems::Decimal => "Decimal",
             PageItems::Hexadecimal => "Hexadecimal",
+            PageItems::Case => "", // not used
         }
+    }
+}
+
+zero_indexed_enum! {
+    CaseItemSelect => [Lowercase, Uppercase]
+}
+
+impl CaseItemSelect {
+    fn str(&self) -> &str {
+        match self {
+            CaseItemSelect::Lowercase => "Lowercase",
+            CaseItemSelect::Uppercase => "Uppercase",
+        }
+    }
+
+    fn strings_vec() -> Vec<String> {
+        Self::vars_vec().iter().map(|s| s.str().into()).collect()
     }
 }
 
@@ -77,6 +102,12 @@ impl Page for NumberBasePage {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('n', Ctrl) => Some(Msg::NumberBasePageSelectNextItem),
             key_code_char!('p', Ctrl) => Some(Msg::NumberBasePageSelectPrevItem),
+            key_code_char!('l') | key_code!(KeyCode::Right) => {
+                Some(Msg::NumberBasePageCurrentItemSelectNext)
+            }
+            key_code_char!('h') | key_code!(KeyCode::Left) => {
+                Some(Msg::NumberBasePageCurrentItemSelectPrev)
+            }
             key_code_char!('y') => Some(Msg::NumberBasePageCopy),
             key_code_char!('p') => Some(Msg::NumberBasePagePaste),
             key_code_char!('e') => Some(Msg::NumberBasePageEditStart),
@@ -91,6 +122,12 @@ impl Page for NumberBasePage {
             }
             Msg::NumberBasePageSelectPrevItem => {
                 self.select_prev_item();
+            }
+            Msg::NumberBasePageCurrentItemSelectNext => {
+                self.current_item_select_next();
+            }
+            Msg::NumberBasePageCurrentItemSelectPrev => {
+                self.current_item_select_prev();
             }
             Msg::NumberBasePageCopy => {
                 return self.copy_to_clipboard();
@@ -113,7 +150,7 @@ impl Page for NumberBasePage {
     }
 
     fn render(&mut self, f: &mut Frame, area: Rect) {
-        let chunks = vertical![==3, ==1, ==3, ==1, ==3, ==1, ==3, ==1].split(area);
+        let chunks = vertical![==3, ==1, ==3, ==1, ==3, ==1, ==3, ==2, ==1].split(area);
 
         self.render_input(f, chunks[0], &self.cur.binary_input, PageItems::Binary);
 
@@ -138,6 +175,14 @@ impl Page for NumberBasePage {
         if !self.cur.hex_status.is_empty() {
             self.render_status(f, chunks[7], self.cur.hex_status.as_str());
         }
+
+        let case_sel = Select::new(
+            CaseItemSelect::strings_vec(),
+            self.cur.case_sel.val(),
+            self.cur.item == PageItems::Case,
+            self.focused,
+        );
+        f.render_widget(case_sel, chunks[8]);
     }
 
     fn focus(&mut self) {
@@ -171,11 +216,34 @@ impl NumberBasePage {
         self.cur.item = self.cur.item.prev();
     }
 
+    fn current_item_select_next(&mut self) {
+        if let PageItems::Case = self.cur.item {
+            if self.cur.case_sel.val() < CaseItemSelect::len() - 1 {
+                self.cur.case_sel = self.cur.case_sel.next();
+            }
+            self.update_hex_case();
+        }
+    }
+
+    fn current_item_select_prev(&mut self) {
+        if let PageItems::Case = self.cur.item {
+            if self.cur.case_sel.val() > 0 {
+                self.cur.case_sel = self.cur.case_sel.prev();
+            }
+            self.update_hex_case();
+        }
+    }
     fn edit_start(&mut self) {
+        if matches!(self.cur.item, PageItems::Case) {
+            return;
+        }
         self.cur.edit = true;
     }
 
     fn edit_end(&mut self) {
+        if matches!(self.cur.item, PageItems::Case) {
+            return;
+        }
         self.cur.edit = false;
     }
 
@@ -194,6 +262,9 @@ impl NumberBasePage {
             PageItems::Hexadecimal => {
                 self.cur.hex_input.handle_event(event);
             }
+            PageItems::Case => {
+                return;
+            }
         }
 
         self.update_numbers(self.cur.item);
@@ -205,6 +276,9 @@ impl NumberBasePage {
             PageItems::Octal => self.cur.octal_input.value(),
             PageItems::Decimal => self.cur.decimal_input.value(),
             PageItems::Hexadecimal => self.cur.hex_input.value(),
+            PageItems::Case => {
+                return None;
+            }
         };
         util::copy_to_clipboard(text)
     }
@@ -224,6 +298,9 @@ impl NumberBasePage {
             PageItems::Hexadecimal => {
                 self.update_hex_input(text);
             }
+            PageItems::Case => {
+                return;
+            }
         }
 
         self.update_numbers(self.cur.item);
@@ -236,6 +313,9 @@ impl NumberBasePage {
             PageItems::Octal => u128::from_str_radix(self.cur.octal_input.value(), 8),
             PageItems::Decimal => u128::from_str_radix(self.cur.decimal_input.value(), 10),
             PageItems::Hexadecimal => u128::from_str_radix(self.cur.hex_input.value(), 16),
+            PageItems::Case => {
+                return;
+            }
         };
         match updated_value {
             Ok(value) => {
@@ -243,6 +323,7 @@ impl NumberBasePage {
                 self.update_octal_input(format!("{:o}", value));
                 self.update_decimal_input(format!("{}", value));
                 self.update_hex_input(format!("{:x}", value));
+                self.update_hex_case();
                 self.cur.binary_status = String::new();
                 self.cur.octal_status = String::new();
                 self.cur.decimal_status = String::new();
@@ -261,6 +342,7 @@ impl NumberBasePage {
                 PageItems::Hexadecimal => {
                     self.cur.hex_status = "Invalid hexadecimal number".into();
                 }
+                PageItems::Case => {}
             },
         }
     }
@@ -279,6 +361,18 @@ impl NumberBasePage {
 
     fn update_hex_input(&mut self, value: String) {
         self.cur.hex_input = self.cur.hex_input.clone().with_value(value);
+    }
+
+    fn update_hex_case(&mut self) {
+        let value = self.cur.hex_input.value();
+        match self.cur.case_sel {
+            CaseItemSelect::Lowercase => {
+                self.cur.hex_input = self.cur.hex_input.clone().with_value(value.to_lowercase());
+            }
+            CaseItemSelect::Uppercase => {
+                self.cur.hex_input = self.cur.hex_input.clone().with_value(value.to_uppercase());
+            }
+        }
     }
 
     fn render_input(&self, f: &mut Frame, area: Rect, input: &Input, item: PageItems) {

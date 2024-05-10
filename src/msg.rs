@@ -47,6 +47,8 @@ pub enum Msg {
 
     NumberBasePageSelectNextItem,
     NumberBasePageSelectPrevItem,
+    NumberBasePageCurrentItemSelectNext,
+    NumberBasePageCurrentItemSelectPrev,
     NumberBasePageEditStart,
     NumberBasePageEditEnd,
     NumberBasePageEditKeyEvent(crossterm::event::KeyEvent),
