@@ -1,3 +1,5 @@
+use std::vec;
+
 use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
@@ -113,5 +115,9 @@ impl Pane for ListPane {
 
     fn unfocus(&mut self) {
         self.focused = false;
+    }
+
+    fn helps(&self) -> Vec<&str> {
+        vec!["<C-n/C-p> Select item", "<Tab> Switch pane"]
     }
 }

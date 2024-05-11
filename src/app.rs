@@ -7,6 +7,7 @@ use ratatui::{
     layout::{Margin, Rect},
     style::{Color, Modifier, Style},
     text::Line,
+    widgets::Paragraph,
     Frame, Terminal,
 };
 use ratatui_macros::{horizontal, vertical};
@@ -15,6 +16,7 @@ use crate::{
     key_code, key_code_char,
     msg::Msg,
     panes::{list::ListPane, pane::Pane, tool::ToolPane},
+    util::group_strs_to_fit_width,
 };
 
 #[zero_indexed_enum]
@@ -132,10 +134,16 @@ impl App {
     }
 
     fn render(&mut self, f: &mut Frame) {
-        let chunks = vertical![>=0, ==1].split(f.size());
+        let area = f.size();
+
+        let help_lines = self.help_lines(area.width - 2);
+        let help_lines_len = help_lines.len() as u16;
+
+        let chunks = vertical![>=0, ==1, ==help_lines_len].split(area);
 
         self.render_panes(f, chunks[0]);
         self.render_notification(f, chunks[1]);
+        self.render_help(f, chunks[2], help_lines);
     }
 
     fn render_panes(&mut self, f: &mut Frame, area: Rect) {
@@ -162,8 +170,31 @@ impl App {
         };
     }
 
+    fn render_help(&self, f: &mut Frame, area: Rect, help_lines: Vec<String>) {
+        let help_lines: Vec<Line> = help_lines
+            .iter()
+            .map(|line| Line::styled(line, Style::default().fg(Color::DarkGray)))
+            .collect();
+        let help = Paragraph::new(help_lines);
+        f.render_widget(help, area.inner(&Margin::new(1, 0)));
+    }
+
     fn resize(&mut self, w: u16, h: u16) {
         let _ = (w, h);
+    }
+}
+
+impl App {
+    fn help_lines(&self, width: u16) -> Vec<String> {
+        let delimiter = ", ";
+        let helps = match self.focused {
+            PaneType::List => self.list_pane.helps(),
+            PaneType::Tool => self.tool_pane.helps(),
+        };
+        group_strs_to_fit_width(&helps, width as usize, delimiter)
+            .iter()
+            .map(|helps| helps.join(delimiter))
+            .collect()
     }
 }
 
