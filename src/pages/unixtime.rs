@@ -11,7 +11,7 @@ use ratatui_macros::vertical;
 use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
-    key_code, key_code_char,
+    fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::select::Select,
@@ -85,15 +85,9 @@ enum TimeZoneItemSelect {
 }
 
 impl TimeZoneItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            TimeZoneItemSelect::Utc => "UTC",
-            TimeZoneItemSelect::Local => "Local",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        TimeZoneItemSelect::Utc => "UTC",
+        TimeZoneItemSelect::Local => "Local",
     }
 }
 

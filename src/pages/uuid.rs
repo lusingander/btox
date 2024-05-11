@@ -5,7 +5,7 @@ use ratatui_macros::vertical;
 use uuid::Uuid;
 
 use crate::{
-    key_code, key_code_char,
+    fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::{
@@ -65,15 +65,9 @@ enum HyphenItemSelect {
 }
 
 impl HyphenItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            HyphenItemSelect::WithHyphen => "With hyphen",
-            HyphenItemSelect::WithoutHyphen => "Without hyphen",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        HyphenItemSelect::WithHyphen => "With hyphen",
+        HyphenItemSelect::WithoutHyphen => "Without hyphen",
     }
 }
 
@@ -84,15 +78,9 @@ enum CaseItemSelect {
 }
 
 impl CaseItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            CaseItemSelect::Lowercase => "Lowercase",
-            CaseItemSelect::Uppercase => "Uppercase",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        CaseItemSelect::Lowercase => "Lowercase",
+        CaseItemSelect::Uppercase => "Uppercase",
     }
 }
 
@@ -102,14 +90,8 @@ enum VersionItemSelect {
 }
 
 impl VersionItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            VersionItemSelect::V4 => "Version 4",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        VersionItemSelect::V4 => "Version 4",
     }
 }
 

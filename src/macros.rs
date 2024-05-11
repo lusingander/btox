@@ -27,3 +27,19 @@ macro_rules! key_code_char {
         }
     };
 }
+
+#[macro_export]
+macro_rules! fn_str_map {
+    ( $( $item:pat => $str:expr ),+ $(,)? ) => {
+        fn str(&self) -> &str {
+            match self {
+                $( $item => $str ),+
+            }
+        }
+
+        #[allow(unused)]
+        fn strings_vec() -> Vec<String> {
+            Self::vars_vec().iter().map(|s| s.str().into()).collect()
+        }
+    };
+}

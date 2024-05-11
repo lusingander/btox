@@ -12,7 +12,7 @@ use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
 use crate::{
-    key_code, key_code_char,
+    fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::{
@@ -75,21 +75,16 @@ enum AlgoItemSelect {
 }
 
 impl AlgoItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            AlgoItemSelect::Md5 => "MD5",
-            AlgoItemSelect::Sha1 => "SHA-1",
-            AlgoItemSelect::Sha224 => "SHA-224",
-            AlgoItemSelect::Sha256 => "SHA-256",
-            AlgoItemSelect::Sha384 => "SHA-384",
-            AlgoItemSelect::Sha512_224 => "SHA-512/224",
-            AlgoItemSelect::Sha512_256 => "SHA-512/256",
-            AlgoItemSelect::Sha512 => "SHA-512",
-        }
-    }
+    fn_str_map! {
+        AlgoItemSelect::Md5 => "MD5",
+        AlgoItemSelect::Sha1 => "SHA-1",
+        AlgoItemSelect::Sha224 => "SHA-224",
+        AlgoItemSelect::Sha256 => "SHA-256",
+        AlgoItemSelect::Sha384 => "SHA-384",
+        AlgoItemSelect::Sha512_224 => "SHA-512/224",
+        AlgoItemSelect::Sha512_256 => "SHA-512/256",
+        AlgoItemSelect::Sha512 => "SHA-512",
 
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
     }
 }
 
@@ -99,14 +94,8 @@ enum EncodeItemSelect {
 }
 
 impl EncodeItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            EncodeItemSelect::Utf8 => "UTF-8",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        EncodeItemSelect::Utf8 => "UTF-8",
     }
 }
 

@@ -10,7 +10,7 @@ use ratatui_macros::vertical;
 use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
-    key_code, key_code_char,
+    fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::select::Select,
@@ -66,14 +66,12 @@ enum PageItems {
 }
 
 impl PageItems {
-    fn str(&self) -> &str {
-        match self {
-            PageItems::Binary => "Binary",
-            PageItems::Octal => "Octal",
-            PageItems::Decimal => "Decimal",
-            PageItems::Hexadecimal => "Hexadecimal",
-            PageItems::Case => "", // not used
-        }
+    fn_str_map! {
+        PageItems::Binary => "Binary",
+        PageItems::Octal => "Octal",
+        PageItems::Decimal => "Decimal",
+        PageItems::Hexadecimal => "Hexadecimal",
+        PageItems::Case => "", // not used
     }
 }
 
@@ -84,15 +82,9 @@ enum CaseItemSelect {
 }
 
 impl CaseItemSelect {
-    fn str(&self) -> &str {
-        match self {
-            CaseItemSelect::Lowercase => "Lowercase",
-            CaseItemSelect::Uppercase => "Uppercase",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        CaseItemSelect::Lowercase => "Lowercase",
+        CaseItemSelect::Uppercase => "Uppercase",
     }
 }
 

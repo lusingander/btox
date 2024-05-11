@@ -7,7 +7,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::{key_code, key_code_char, msg::Msg, panes::pane::Pane};
+use crate::{fn_str_map, key_code, key_code_char, msg::Msg, panes::pane::Pane};
 
 #[zero_indexed_enum]
 enum PageType {
@@ -27,17 +27,11 @@ impl PageType {
         }
     }
 
-    fn str(&self) -> &str {
-        match self {
-            PageType::Uuid => "UUID",
-            PageType::Hash => "Hash",
-            PageType::UnixTime => "Unix time",
-            PageType::NumberBase => "Number base",
-        }
-    }
-
-    fn strings_vec() -> Vec<String> {
-        Self::vars_vec().iter().map(|s| s.str().into()).collect()
+    fn_str_map! {
+        PageType::Uuid => "UUID",
+        PageType::Hash => "Hash",
+        PageType::UnixTime => "Unix time",
+        PageType::NumberBase => "Number base",
     }
 }
 
