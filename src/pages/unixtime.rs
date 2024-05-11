@@ -70,15 +70,18 @@ impl UnixTimePage {
     }
 }
 
-zero_indexed_enum! {
-    PageItems => [Input, Output, TimeZone, OutputFormat]
+#[zero_indexed_enum]
+enum PageItems {
+    Input,
+    Output,
+    TimeZone,
+    OutputFormat,
 }
 
-zero_indexed_enum! {
-    TimeZoneItemSelect => [
-        Utc,
-        Local,
-    ]
+#[zero_indexed_enum]
+enum TimeZoneItemSelect {
+    Utc,
+    Local,
 }
 
 impl TimeZoneItemSelect {

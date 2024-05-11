@@ -54,21 +54,24 @@ impl HashPage {
     }
 }
 
-zero_indexed_enum! {
-    PageItems => [Algo, Encode, Input, Output]
+#[zero_indexed_enum]
+enum PageItems {
+    Algo,
+    Encode,
+    Input,
+    Output,
 }
 
-zero_indexed_enum! {
-    AlgoItemSelect => [
-        Md5,
-        Sha1,
-        Sha224,
-        Sha256,
-        Sha384,
-        Sha512_224,
-        Sha512_256,
-        Sha512,
-    ]
+#[zero_indexed_enum]
+enum AlgoItemSelect {
+    Md5,
+    Sha1,
+    Sha224,
+    Sha256,
+    Sha384,
+    Sha512_224,
+    Sha512_256,
+    Sha512,
 }
 
 impl AlgoItemSelect {
@@ -90,10 +93,9 @@ impl AlgoItemSelect {
     }
 }
 
-zero_indexed_enum! {
-    EncodeItemSelect => [
-        Utf8,
-    ]
+#[zero_indexed_enum]
+enum EncodeItemSelect {
+    Utf8,
 }
 
 impl EncodeItemSelect {

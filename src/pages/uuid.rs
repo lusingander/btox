@@ -49,12 +49,19 @@ impl UuidPage {
     }
 }
 
-zero_indexed_enum! {
-    PageItems => [Hyphen, Case, Version, Count, Output]
+#[zero_indexed_enum]
+enum PageItems {
+    Hyphen,
+    Case,
+    Version,
+    Count,
+    Output,
 }
 
-zero_indexed_enum! {
-    HyphenItemSelect => [WithHyphen, WithoutHyphen]
+#[zero_indexed_enum]
+enum HyphenItemSelect {
+    WithHyphen,
+    WithoutHyphen,
 }
 
 impl HyphenItemSelect {
@@ -70,8 +77,10 @@ impl HyphenItemSelect {
     }
 }
 
-zero_indexed_enum! {
-    CaseItemSelect => [Lowercase, Uppercase]
+#[zero_indexed_enum]
+enum CaseItemSelect {
+    Lowercase,
+    Uppercase,
 }
 
 impl CaseItemSelect {
@@ -87,8 +96,9 @@ impl CaseItemSelect {
     }
 }
 
-zero_indexed_enum! {
-    VersionItemSelect => [V4]
+#[zero_indexed_enum]
+enum VersionItemSelect {
+    V4,
 }
 
 impl VersionItemSelect {

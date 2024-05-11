@@ -9,13 +9,12 @@ use ratatui::{
 
 use crate::{key_code, key_code_char, msg::Msg, panes::pane::Pane};
 
-zero_indexed_enum! {
-    PageType => [
-        Uuid,
-        Hash,
-        UnixTime,
-        NumberBase
-    ]
+#[zero_indexed_enum]
+enum PageType {
+    Uuid,
+    Hash,
+    UnixTime,
+    NumberBase,
 }
 
 impl PageType {

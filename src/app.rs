@@ -17,11 +17,10 @@ use crate::{
     panes::{list::ListPane, pane::Pane, tool::ToolPane},
 };
 
-zero_indexed_enum! {
-    PaneType => [
-        List,
-        Tool,
-    ]
+#[zero_indexed_enum]
+enum PaneType {
+    List,
+    Tool,
 }
 
 enum Notification {

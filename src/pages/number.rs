@@ -56,8 +56,13 @@ impl NumberBasePage {
     }
 }
 
-zero_indexed_enum! {
-    PageItems => [Binary, Octal, Decimal, Hexadecimal, Case]
+#[zero_indexed_enum]
+enum PageItems {
+    Binary,
+    Octal,
+    Decimal,
+    Hexadecimal,
+    Case,
 }
 
 impl PageItems {
@@ -72,8 +77,10 @@ impl PageItems {
     }
 }
 
-zero_indexed_enum! {
-    CaseItemSelect => [Lowercase, Uppercase]
+#[zero_indexed_enum]
+enum CaseItemSelect {
+    Lowercase,
+    Uppercase,
 }
 
 impl CaseItemSelect {
