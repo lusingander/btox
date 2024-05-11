@@ -2,7 +2,6 @@
 pub enum Msg {
     Quit,
     SwitchPane,
-    ToggleHelp,
 
     ListPaneSelectNext,
     ListPaneSelectPrev,

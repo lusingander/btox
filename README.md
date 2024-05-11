@@ -15,8 +15,6 @@ my personal toolbox app
 | <kbd>Tab</kbd>                   | toggle focus |
 | <kbd>Ctrl+C</kbd> <kbd>Esc</kbd> | quit         |
 
-Detailed keybindings for each features can be displayed pressing the `?`.
-
 ## Features / Screenshots
 
 ### UUID

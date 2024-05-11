@@ -79,7 +79,6 @@ impl App {
         match key {
             key_code_char!('c', Ctrl) => Some(Msg::Quit),
             key_code!(KeyCode::Tab) => Some(Msg::SwitchPane),
-            key_code_char!('?') => Some(Msg::ToggleHelp),
             _ => match self.focused {
                 PaneType::List => self.list_pane.handle_key(key),
                 PaneType::Tool => self.tool_pane.handle_key(key),
