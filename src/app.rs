@@ -138,11 +138,15 @@ impl App {
         let help_lines = self.help_lines(area.width - 2);
         let help_lines_len = help_lines.len() as u16;
 
-        let chunks = vertical![>=0, ==1, ==help_lines_len].split(area);
+        let chunks = vertical![>=0, ==help_lines_len].split(area);
 
         self.render_panes(f, chunks[0]);
-        self.render_notification(f, chunks[1]);
-        self.render_help(f, chunks[2], help_lines);
+
+        if matches!(self.notification, Notification::None) {
+            self.render_help(f, chunks[1], help_lines);
+        } else {
+            self.render_notification(f, chunks[1]);
+        }
     }
 
     fn render_panes(&mut self, f: &mut Frame, area: Rect) {
