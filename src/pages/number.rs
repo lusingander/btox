@@ -21,6 +21,7 @@ pub struct NumberBasePage {
     cur: CurrentStatus,
 }
 
+#[derive(Default)]
 struct CurrentStatus {
     item: PageItems,
     binary_input: Input,
@@ -39,25 +40,15 @@ impl NumberBasePage {
     pub fn new(focused: bool) -> NumberBasePage {
         NumberBasePage {
             focused,
-            cur: CurrentStatus {
-                item: PageItems::Binary,
-                binary_input: Input::default(),
-                octal_input: Input::default(),
-                decimal_input: Input::default(),
-                hex_input: Input::default(),
-                binary_status: String::new(),
-                octal_status: String::new(),
-                decimal_status: String::new(),
-                hex_status: String::new(),
-                case_sel: CaseItemSelect::Lowercase,
-                edit: false,
-            },
+            cur: CurrentStatus::default(),
         }
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum PageItems {
+    #[default]
     Binary,
     Octal,
     Decimal,
@@ -75,8 +66,10 @@ impl PageItems {
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum CaseItemSelect {
+    #[default]
     Lowercase,
     Uppercase,
 }

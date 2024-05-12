@@ -24,6 +24,7 @@ pub struct UnixTimePage {
     cur: CurrentStatus,
 }
 
+#[derive(Default)]
 struct CurrentStatus {
     item: PageItems,
     input: Input,
@@ -35,7 +36,9 @@ struct CurrentStatus {
     edit: bool,
 }
 
+#[derive(Default)]
 enum Status {
+    #[default]
     None,
     Info(String),
     Warn(String),
@@ -57,29 +60,27 @@ impl UnixTimePage {
         UnixTimePage {
             focused,
             cur: CurrentStatus {
-                item: PageItems::Input,
-                input: Input::default(),
-                output: String::new(),
-                tz_sel: TimeZoneItemSelect::Utc,
                 output_format,
-                input_status: Status::None,
-                output_format_status: Status::None,
-                edit: false,
+                ..Default::default()
             },
         }
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum PageItems {
+    #[default]
     Input,
     Output,
     TimeZone,
     OutputFormat,
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum TimeZoneItemSelect {
+    #[default]
     Utc,
     Local,
 }

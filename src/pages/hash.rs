@@ -26,6 +26,7 @@ pub struct HashPage {
     cur: CurrentStatus,
 }
 
+#[derive(Default)]
 struct CurrentStatus {
     item: PageItems,
     algo_sel: AlgoItemSelect,
@@ -37,33 +38,35 @@ struct CurrentStatus {
 
 impl HashPage {
     pub fn new(focused: bool) -> HashPage {
-        let algo_sel = AlgoItemSelect::Md5;
+        let algo_sel = AlgoItemSelect::default();
         let input = String::new();
         let output = calculate_hash(&input, algo_sel);
         HashPage {
             focused,
             cur: CurrentStatus {
-                item: PageItems::Algo,
                 algo_sel,
-                enc_sel: EncodeItemSelect::Utf8,
                 input,
-                input_state: ScrollOutputState::default(),
                 output,
+                ..Default::default()
             },
         }
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum PageItems {
+    #[default]
     Algo,
     Encode,
     Input,
     Output,
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum AlgoItemSelect {
+    #[default]
     Md5,
     Sha1,
     Sha224,
@@ -88,8 +91,10 @@ impl AlgoItemSelect {
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum EncodeItemSelect {
+    #[default]
     Utf8,
 }
 

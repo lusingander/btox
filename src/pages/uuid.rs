@@ -23,6 +23,7 @@ pub struct UuidPage {
     ids: Vec<Uuid>,
 }
 
+#[derive(Default)]
 struct CurrentStatus {
     item: PageItems,
     hyphen_sel: HyphenItemSelect,
@@ -37,20 +38,18 @@ impl UuidPage {
         UuidPage {
             focused,
             cur: CurrentStatus {
-                item: PageItems::Hyphen,
-                hyphen_sel: HyphenItemSelect::WithHyphen,
-                case_sel: CaseItemSelect::Lowercase,
-                ver_sel: VersionItemSelect::V4,
                 count: 1,
-                output_state: ScrollOutputState::default(),
+                ..Default::default()
             },
             ids: Vec::new(),
         }
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum PageItems {
+    #[default]
     Hyphen,
     Case,
     Version,
@@ -58,8 +57,10 @@ enum PageItems {
     Output,
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum HyphenItemSelect {
+    #[default]
     WithHyphen,
     WithoutHyphen,
 }
@@ -71,8 +72,10 @@ impl HyphenItemSelect {
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum CaseItemSelect {
+    #[default]
     Lowercase,
     Uppercase,
 }
@@ -84,8 +87,10 @@ impl CaseItemSelect {
     }
 }
 
+#[derive(Default)]
 #[zero_indexed_enum]
 enum VersionItemSelect {
+    #[default]
     V4,
 }
 
