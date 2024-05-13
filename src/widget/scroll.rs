@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -6,10 +8,35 @@ use ratatui::{
     widgets::{Block, Padding, Paragraph, StatefulWidget, Widget},
 };
 
+struct BarCharSet {
+    full: char,
+    upper_half: char,
+    lower_half: char,
+}
+
+impl BarCharSet {
+    fn normal() -> BarCharSet {
+        BarCharSet {
+            full: '│',
+            upper_half: '╵',
+            lower_half: '╷',
+        }
+    }
+
+    #[allow(unused)]
+    fn heavy() -> BarCharSet {
+        BarCharSet {
+            full: '┃',
+            upper_half: '╹',
+            lower_half: '╻',
+        }
+    }
+}
+
 pub struct ScrollBar {
     lines_len: usize,
     offset: usize,
-    bar_char: char,
+    bar_char_set: BarCharSet,
 }
 
 impl ScrollBar {
@@ -17,7 +44,7 @@ impl ScrollBar {
         ScrollBar {
             lines_len,
             offset,
-            bar_char: '│', // use '┃' or '║' instead...?
+            bar_char_set: BarCharSet::normal(),
         }
     }
 }
@@ -36,30 +63,41 @@ impl Widget for ScrollBar {
 
 impl ScrollBar {
     fn render_scroll_bar(&self, area: Rect, buf: &mut Buffer) {
-        let scrollbar_height = self.calc_scrollbar_height(area);
-        let scrollbar_top = self.calc_scrollbar_top(area, scrollbar_height);
+        let scrollbar_height = self.calc_virtual_scrollbar_height(area);
+        let scrollbar_range = self.calc_virtual_scrollbar_range(area, scrollbar_height);
 
+        let r = scrollbar_range;
         let x = area.x;
-        for h in 0..scrollbar_height {
-            let y = scrollbar_top + h;
-            buf.get_mut(x, y).set_char(self.bar_char);
+        for i in 0..area.height {
+            let y = area.y + i;
+            let upper_half = r.contains(&(area.y + i * 2));
+            let lower_half = r.contains(&(area.y + i * 2 + 1));
+            if upper_half && lower_half {
+                buf.get_mut(x, y).set_char(self.bar_char_set.full);
+            } else if upper_half {
+                buf.get_mut(x, y).set_char(self.bar_char_set.upper_half);
+            } else if lower_half {
+                buf.get_mut(x, y).set_char(self.bar_char_set.lower_half);
+            }
         }
     }
 
-    fn calc_scrollbar_height(&self, area: Rect) -> u16 {
-        let area_h = area.height as f64;
-        let lines_len = self.lines_len as f64;
+    fn calc_virtual_scrollbar_height(&self, area: Rect) -> u16 {
+        let area_h = (area.height as f64) * 2.0;
+        let lines_len = (self.lines_len as f64) * 2.0;
         let height = area_h * (area_h / lines_len);
         (height as u16).max(1)
     }
 
-    fn calc_scrollbar_top(&self, area: Rect, scrollbar_height: u16) -> u16 {
-        let area_h = area.height as f64;
+    fn calc_virtual_scrollbar_range(&self, area: Rect, scrollbar_height: u16) -> Range<u16> {
+        let area_h = (area.height as f64) * 2.0;
         let scrollbar_h = scrollbar_height as f64;
-        let offset = self.offset as f64;
-        let lines_len = self.lines_len as f64;
-        let top = ((area_h - scrollbar_h) * offset) / (lines_len - area_h);
-        area.y + (top as u16)
+        let offset = (self.offset as f64) * 2.0;
+        let lines_len = (self.lines_len as f64) * 2.0;
+        let top_offset = ((area_h - scrollbar_h) * offset) / (lines_len - area_h);
+
+        let top = top_offset as u16 + area.y;
+        top..(top + scrollbar_height)
     }
 }
 
