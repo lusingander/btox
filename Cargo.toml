@@ -16,3 +16,7 @@ sha1 = "0.10.6"
 sha2 = "0.10.8"
 tui-input = "0.8.0"
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
+
+[dev-dependencies]
+indoc = "2.0.5" # https://github.com/ratatui-org/ratatui/issues/1043
+rstest = "0.19.0"

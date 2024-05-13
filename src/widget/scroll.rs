@@ -196,3 +196,33 @@ impl<'a> StatefulWidget for ScrollOutput<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ratatui::assert_buffer_eq;
+    use rstest::*;
+
+    #[rstest]
+    #[case(10, 20, 0, vec!["│", "│", "│", "│", "│", " ", " ", " ", " ", " "])]
+    #[case(10, 20, 1, vec!["╷", "│", "│", "│", "│", "╵", " ", " ", " ", " "])]
+    #[case(10, 20, 2, vec![" ", "│", "│", "│", "│", "│", " ", " ", " ", " "])]
+    #[case(10, 20, 3, vec![" ", "╷", "│", "│", "│", "│", "╵", " ", " ", " "])]
+    #[case(10, 20, 9, vec![" ", " ", " ", " ", "╷", "│", "│", "│", "│", "╵"])]
+    #[case(10, 20, 10, vec![" ", " ", " ", " ", " ", "│", "│", "│", "│", "│"])]
+    fn test_scroll_bar(
+        #[case] area_height: u16,
+        #[case] lines_len: usize,
+        #[case] offset: usize,
+        #[case] expected: Vec<&'static str>,
+    ) {
+        let area = Rect::new(0, 0, 1, area_height);
+        let mut buf = Buffer::empty(area);
+
+        let scroll_bar = ScrollBar::new(lines_len, offset);
+        scroll_bar.render(area, &mut buf);
+
+        let expected = Buffer::with_lines(expected);
+        assert_buffer_eq!(buf, expected);
+    }
+}
