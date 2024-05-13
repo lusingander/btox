@@ -11,7 +11,7 @@ use ratatui_macros::vertical;
 use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
-    fn_str_map, key_code, key_code_char,
+    fn_next_prev_mut, fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::select::Select,
@@ -90,6 +90,8 @@ impl TimeZoneItemSelect {
         TimeZoneItemSelect::Utc => "UTC",
         TimeZoneItemSelect::Local => "Local",
     }
+
+    fn_next_prev_mut! {}
 }
 
 impl Page for UnixTimePage {
@@ -244,9 +246,7 @@ impl UnixTimePage {
     fn current_item_select_next(&mut self) {
         match self.cur.item {
             PageItems::TimeZone => {
-                if self.cur.tz_sel.val() < TimeZoneItemSelect::len() - 1 {
-                    self.cur.tz_sel = self.cur.tz_sel.next();
-                }
+                self.cur.tz_sel.next_mut();
                 self.update_output();
             }
             PageItems::Input => {}
@@ -258,9 +258,7 @@ impl UnixTimePage {
     fn current_item_select_prev(&mut self) {
         match self.cur.item {
             PageItems::TimeZone => {
-                if self.cur.tz_sel.val() > 0 {
-                    self.cur.tz_sel = self.cur.tz_sel.prev();
-                }
+                self.cur.tz_sel.prev_mut();
                 self.update_output();
             }
             PageItems::Input => {}

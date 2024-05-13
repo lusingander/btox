@@ -10,7 +10,7 @@ use ratatui_macros::vertical;
 use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
-    fn_str_map, key_code, key_code_char,
+    fn_next_prev_mut, fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::select::Select,
@@ -79,6 +79,8 @@ impl CaseItemSelect {
         CaseItemSelect::Lowercase => "Lowercase",
         CaseItemSelect::Uppercase => "Uppercase",
     }
+
+    fn_next_prev_mut! {}
 }
 
 impl Page for NumberBasePage {
@@ -210,18 +212,14 @@ impl NumberBasePage {
 
     fn current_item_select_next(&mut self) {
         if let PageItems::Case = self.cur.item {
-            if self.cur.case_sel.val() < CaseItemSelect::len() - 1 {
-                self.cur.case_sel = self.cur.case_sel.next();
-            }
+            self.cur.case_sel.next_mut();
             self.update_hex_case();
         }
     }
 
     fn current_item_select_prev(&mut self) {
         if let PageItems::Case = self.cur.item {
-            if self.cur.case_sel.val() > 0 {
-                self.cur.case_sel = self.cur.case_sel.prev();
-            }
+            self.cur.case_sel.prev_mut();
             self.update_hex_case();
         }
     }

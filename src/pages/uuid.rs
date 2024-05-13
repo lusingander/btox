@@ -5,7 +5,7 @@ use ratatui_macros::vertical;
 use uuid::Uuid;
 
 use crate::{
-    fn_str_map, key_code, key_code_char,
+    fn_next_prev_mut, fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::{
@@ -70,6 +70,8 @@ impl HyphenItemSelect {
         HyphenItemSelect::WithHyphen => "With hyphen",
         HyphenItemSelect::WithoutHyphen => "Without hyphen",
     }
+
+    fn_next_prev_mut! {}
 }
 
 #[derive(Default)]
@@ -85,6 +87,8 @@ impl CaseItemSelect {
         CaseItemSelect::Lowercase => "Lowercase",
         CaseItemSelect::Uppercase => "Uppercase",
     }
+
+    fn_next_prev_mut! {}
 }
 
 #[derive(Default)]
@@ -98,6 +102,8 @@ impl VersionItemSelect {
     fn_str_map! {
         VersionItemSelect::V4 => "Version 4",
     }
+
+    fn_next_prev_mut! {}
 }
 
 impl Page for UuidPage {
@@ -229,19 +235,13 @@ impl UuidPage {
     fn current_item_select_next(&mut self) {
         match self.cur.item {
             PageItems::Hyphen => {
-                if self.cur.hyphen_sel.val() < HyphenItemSelect::len() - 1 {
-                    self.cur.hyphen_sel = self.cur.hyphen_sel.next();
-                }
+                self.cur.hyphen_sel.next_mut();
             }
             PageItems::Case => {
-                if self.cur.case_sel.val() < CaseItemSelect::len() - 1 {
-                    self.cur.case_sel = self.cur.case_sel.next();
-                }
+                self.cur.case_sel.next_mut();
             }
             PageItems::Version => {
-                if self.cur.ver_sel.val() < VersionItemSelect::len() - 1 {
-                    self.cur.ver_sel = self.cur.ver_sel.next();
-                }
+                self.cur.ver_sel.next_mut();
             }
             PageItems::Count => {
                 if self.cur.count < COUNT_MAX {
@@ -255,19 +255,13 @@ impl UuidPage {
     fn current_item_select_prev(&mut self) {
         match self.cur.item {
             PageItems::Hyphen => {
-                if self.cur.hyphen_sel.val() > 0 {
-                    self.cur.hyphen_sel = self.cur.hyphen_sel.prev();
-                }
+                self.cur.hyphen_sel.prev_mut();
             }
             PageItems::Case => {
-                if self.cur.case_sel.val() > 0 {
-                    self.cur.case_sel = self.cur.case_sel.prev();
-                }
+                self.cur.case_sel.prev_mut();
             }
             PageItems::Version => {
-                if self.cur.ver_sel.val() > 0 {
-                    self.cur.ver_sel = self.cur.ver_sel.prev();
-                }
+                self.cur.ver_sel.prev_mut();
             }
             PageItems::Count => {
                 if self.cur.count > 1 {

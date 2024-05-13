@@ -12,7 +12,7 @@ use sha1::Sha1;
 use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
 use crate::{
-    fn_str_map, key_code, key_code_char,
+    fn_next_prev_mut, fn_str_map, key_code, key_code_char,
     msg::Msg,
     pages::{page::Page, util},
     widget::{
@@ -87,8 +87,9 @@ impl AlgoItemSelect {
         AlgoItemSelect::Sha512_224 => "SHA-512/224",
         AlgoItemSelect::Sha512_256 => "SHA-512/256",
         AlgoItemSelect::Sha512 => "SHA-512",
-
     }
+
+    fn_next_prev_mut! {}
 }
 
 #[derive(Default)]
@@ -102,6 +103,8 @@ impl EncodeItemSelect {
     fn_str_map! {
         EncodeItemSelect::Utf8 => "UTF-8",
     }
+
+    fn_next_prev_mut! {}
 }
 
 impl Page for HashPage {
@@ -238,15 +241,11 @@ impl HashPage {
     fn current_item_select_next(&mut self) {
         match self.cur.item {
             PageItems::Algo => {
-                if self.cur.algo_sel.val() < AlgoItemSelect::len() - 1 {
-                    self.cur.algo_sel = self.cur.algo_sel.next();
-                }
+                self.cur.algo_sel.next_mut();
                 self.update_hash();
             }
             PageItems::Encode => {
-                if self.cur.enc_sel.val() < EncodeItemSelect::len() - 1 {
-                    self.cur.enc_sel = self.cur.enc_sel.next();
-                }
+                self.cur.enc_sel.next_mut();
                 self.update_hash();
             }
             PageItems::Input => {}
@@ -257,15 +256,11 @@ impl HashPage {
     fn current_item_select_prev(&mut self) {
         match self.cur.item {
             PageItems::Algo => {
-                if self.cur.algo_sel.val() > 0 {
-                    self.cur.algo_sel = self.cur.algo_sel.prev();
-                }
+                self.cur.algo_sel.prev_mut();
                 self.update_hash();
             }
             PageItems::Encode => {
-                if self.cur.enc_sel.val() > 0 {
-                    self.cur.enc_sel = self.cur.enc_sel.prev();
-                }
+                self.cur.enc_sel.prev_mut();
                 self.update_hash();
             }
             PageItems::Input => {}
