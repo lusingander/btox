@@ -1,8 +1,8 @@
 use std::vec;
 
-use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
+    crossterm::event::KeyCode,
     layout::Rect,
     style::{Color, Style},
     widgets::{Block, BorderType, Borders, List, ListItem},
@@ -52,7 +52,7 @@ impl ListPane {
 }
 
 impl Pane for ListPane {
-    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+    fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('n', Ctrl) => Some(Msg::ListPaneSelectNext),

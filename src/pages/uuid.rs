@@ -1,6 +1,5 @@
-use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
-use ratatui::{layout::Rect, text::Line, Frame};
+use ratatui::{crossterm::event::KeyCode, layout::Rect, text::Line, Frame};
 use ratatui_macros::vertical;
 use uuid::Uuid;
 
@@ -107,7 +106,7 @@ impl VersionItemSelect {
 }
 
 impl Page for UuidPage {
-    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+    fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('n', Ctrl) => Some(Msg::UuidPageSelectNextItem),

@@ -28,7 +28,7 @@ impl ToolPane {
 }
 
 impl Pane for ToolPane {
-    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+    fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         self.page.handle_key(key)
     }
 
@@ -66,7 +66,7 @@ impl Pane for ToolPane {
 
         f.render_widget(page_block, area);
 
-        let page_content_area = area.inner(&Margin::new(2, 1));
+        let page_content_area = area.inner(Margin::new(2, 1));
         self.page.render(f, page_content_area);
     }
 

@@ -40,7 +40,7 @@ pub enum Msg {
     UnixTimePageCurrentItemSelectPrev,
     UnixTimePageEditStart,
     UnixTimePageEditEnd,
-    UnixTimePageEditKeyEvent(crossterm::event::KeyEvent),
+    UnixTimePageEditKeyEvent(ratatui::crossterm::event::KeyEvent),
     UnixTimePageCopy,
     UnixTimePagePaste,
 
@@ -50,7 +50,7 @@ pub enum Msg {
     NumberBasePageCurrentItemSelectPrev,
     NumberBasePageEditStart,
     NumberBasePageEditEnd,
-    NumberBasePageEditKeyEvent(crossterm::event::KeyEvent),
+    NumberBasePageEditKeyEvent(ratatui::crossterm::event::KeyEvent),
     NumberBasePageCopy,
     NumberBasePagePaste,
 }

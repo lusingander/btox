@@ -1,9 +1,9 @@
 use std::sync::mpsc;
 
-use crossterm::event::{Event, KeyCode};
 use itsuki::zero_indexed_enum;
 use ratatui::{
     backend::Backend,
+    crossterm::event::{Event, KeyCode},
     layout::{Margin, Rect},
     style::{Color, Modifier, Style},
     text::Line,
@@ -75,7 +75,7 @@ impl App {
         Ok(())
     }
 
-    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+    fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code_char!('c', Ctrl) => Some(Msg::Quit),
             key_code!(KeyCode::Tab) => Some(Msg::SwitchPane),
@@ -133,7 +133,7 @@ impl App {
     }
 
     fn render(&mut self, f: &mut Frame) {
-        let area = f.size();
+        let area = f.area();
 
         let help_lines = self.help_lines(area.width - 2);
         let help_lines_len = help_lines.len() as u16;
@@ -157,7 +157,7 @@ impl App {
     }
 
     fn render_notification(&self, f: &mut Frame, area: Rect) {
-        let area = area.inner(&Margin::new(1, 0));
+        let area = area.inner(Margin::new(1, 0));
         let style = Style::default().add_modifier(Modifier::BOLD);
         match &self.notification {
             Notification::Info(msg) => {
@@ -179,7 +179,7 @@ impl App {
             .map(|line| Line::styled(line, Style::default().fg(Color::DarkGray)))
             .collect();
         let help = Paragraph::new(help_lines);
-        f.render_widget(help, area.inner(&Margin::new(1, 0)));
+        f.render_widget(help, area.inner(Margin::new(1, 0)));
     }
 
     fn resize(&mut self, w: u16, h: u16) {

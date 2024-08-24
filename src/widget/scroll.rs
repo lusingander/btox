@@ -73,11 +73,11 @@ impl ScrollBar {
             let upper_half = r.contains(&(area.y + i * 2));
             let lower_half = r.contains(&(area.y + i * 2 + 1));
             if upper_half && lower_half {
-                buf.get_mut(x, y).set_char(self.bar_char_set.full);
+                buf[(x, y)].set_char(self.bar_char_set.full);
             } else if upper_half {
-                buf.get_mut(x, y).set_char(self.bar_char_set.upper_half);
+                buf[(x, y)].set_char(self.bar_char_set.upper_half);
             } else if lower_half {
-                buf.get_mut(x, y).set_char(self.bar_char_set.lower_half);
+                buf[(x, y)].set_char(self.bar_char_set.lower_half);
             }
         }
     }
@@ -200,7 +200,6 @@ impl<'a> StatefulWidget for ScrollOutput<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ratatui::assert_buffer_eq;
     use rstest::*;
 
     #[rstest]
@@ -227,6 +226,6 @@ mod tests {
         scroll_bar.render(area, &mut buf);
 
         let expected = Buffer::with_lines(expected);
-        assert_buffer_eq!(buf, expected);
+        assert_eq!(buf, expected);
     }
 }

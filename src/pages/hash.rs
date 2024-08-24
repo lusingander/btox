@@ -1,7 +1,7 @@
-use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use md5::{Digest, Md5};
 use ratatui::{
+    crossterm::event::KeyCode,
     layout::Rect,
     style::{Color, Style},
     widgets::{Block, Padding, Paragraph, Wrap},
@@ -108,7 +108,7 @@ impl EncodeItemSelect {
 }
 
 impl Page for HashPage {
-    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+    fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('n', Ctrl) => Some(Msg::HashPageSelectNextItem),

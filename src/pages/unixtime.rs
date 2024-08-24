@@ -1,7 +1,7 @@
 use chrono::{DateTime, Local, Utc};
-use crossterm::event::KeyCode;
 use itsuki::zero_indexed_enum;
 use ratatui::{
+    crossterm::event::KeyCode,
     layout::Rect,
     style::{Color, Style},
     widgets::{Block, Borders, Padding, Paragraph},
@@ -95,7 +95,7 @@ impl TimeZoneItemSelect {
 }
 
 impl Page for UnixTimePage {
-    fn handle_key(&self, key: crossterm::event::KeyEvent) -> Option<Msg> {
+    fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         if self.cur.edit {
             return match key {
                 key_code!(KeyCode::Esc) => Some(Msg::UnixTimePageEditEnd),
@@ -283,8 +283,8 @@ impl UnixTimePage {
         self.cur.edit = false;
     }
 
-    fn edit(&mut self, key: crossterm::event::KeyEvent) {
-        let event = &crossterm::event::Event::Key(key);
+    fn edit(&mut self, key: ratatui::crossterm::event::KeyEvent) {
+        let event = &ratatui::crossterm::event::Event::Key(key);
 
         match self.cur.item {
             PageItems::Input => {
@@ -391,7 +391,7 @@ impl UnixTimePage {
             let visual_cursor = input.visual_cursor() as u16;
             let x = area.x + 2 + visual_cursor.min(input_max_width);
             let y = area.y + 1;
-            f.set_cursor(x, y);
+            f.set_cursor_position((x, y));
         }
     }
 
