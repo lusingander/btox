@@ -24,46 +24,48 @@ Tab
 
 # uuid
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Type "l"
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Type@200ms "llll"
 Sleep 500ms
 Enter
-Sleep 1s
+Sleep 500ms
 Screenshot ./img/uuid.png
+Sleep 500ms
 
 Tab
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Tab
 
 # hash
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Copy "btox"
 Type "p"
 Sleep 500ms
-Ctrl+P
+Type "k"
 Sleep 500ms
-Ctrl+P
+Type "k"
 Sleep 500ms
 Type@500ms "lll"
-Sleep 1s
+Sleep 500ms
 Screenshot ./img/hash.png
+Sleep 500ms
 
 Tab
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Tab
 
@@ -74,14 +76,14 @@ Sleep 500ms
 Type@100ms "1711976400"
 Escape
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Type "l"
-Ctrl+P
+Type "k"
 Sleep 500ms
-Ctrl+P
+Type "k"
 Sleep 500ms
 Type "e"
 Sleep 500ms
@@ -89,20 +91,21 @@ Type@100ms "123"
 Sleep 500ms
 Type@100ms "456"
 Escape
-Sleep 1s
+Sleep 500ms
 Screenshot ./img/unixtime.png
+Sleep 500ms
 
 Tab
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Tab
 
 # number base
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
-Ctrl+N
+Type "j"
 Sleep 500ms
 Type "e"
 Sleep 500ms
@@ -110,11 +113,12 @@ Type@100ms "1234"
 Sleep 500ms
 Escape
 Sleep 1s
-Ctrl+P
+Type "k"
 Sleep 500ms
 Type "e"
 Sleep 500ms
 Type@100ms "567"
 Escape
-Sleep 1s
+Sleep 500ms
 Screenshot ./img/numberbase.png
+Sleep 500ms
