@@ -6,12 +6,12 @@ my personal toolbox app
 
 ## Usage
 
-### Keybindings
+### Common keybindings
 
 | Key                              | Description  |
 | -------------------------------- | ------------ |
-| <kbd>Ctrl+n</kbd>                | cursor down  |
-| <kbd>Ctrl+p</kbd>                | cursor up    |
+| <kbd>j</kbd>                     | cursor down  |
+| <kbd>k</kbd>                     | cursor up    |
 | <kbd>Tab</kbd>                   | toggle focus |
 | <kbd>Ctrl+C</kbd> <kbd>Esc</kbd> | quit         |
 

@@ -105,8 +105,8 @@ impl Page for UnixTimePage {
 
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('n', Ctrl) => Some(Msg::UnixTimePageSelectNextItem),
-            key_code_char!('p', Ctrl) => Some(Msg::UnixTimePageSelectPrevItem),
+            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UnixTimePageSelectNextItem),
+            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UnixTimePageSelectPrevItem),
             key_code_char!('l') | key_code!(KeyCode::Right) => {
                 Some(Msg::UnixTimePageCurrentItemSelectNext)
             }
@@ -216,9 +216,9 @@ impl Page for UnixTimePage {
         if self.cur.edit {
             helps.push("<Esc> End edit");
         } else {
-            helps.push("<C-n/C-p> Select item");
+            helps.push("<j/k> Select item");
             if matches!(self.cur.item, TimeZone) {
-                helps.push("<Left/Right> Select current item value");
+                helps.push("<h/l> Select current item value");
             }
             if matches!(self.cur.item, Input | OutputFormat) {
                 helps.push("<e> Edit");

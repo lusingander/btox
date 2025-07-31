@@ -109,16 +109,16 @@ impl Page for UuidPage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('n', Ctrl) => Some(Msg::UuidPageSelectNextItem),
-            key_code_char!('p', Ctrl) => Some(Msg::UuidPageSelectPrevItem),
+            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UuidPageSelectNextItem),
+            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UuidPageSelectPrevItem),
             key_code_char!('l') | key_code!(KeyCode::Right) => {
                 Some(Msg::UuidPageCurrentItemSelectNext)
             }
             key_code_char!('h') | key_code!(KeyCode::Left) => {
                 Some(Msg::UuidPageCurrentItemSelectPrev)
             }
-            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UuidPageScrollDown),
-            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UuidPageScrollUp),
+            key_code_char!('e', Ctrl) => Some(Msg::UuidPageScrollDown),
+            key_code_char!('y', Ctrl) => Some(Msg::UuidPageScrollUp),
             key_code_char!('y') => Some(Msg::UuidPageCopy),
             key_code_char!('p') => Some(Msg::UuidPagePaste),
             key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
@@ -208,13 +208,13 @@ impl Page for UuidPage {
 
     fn helps(&self) -> Vec<&str> {
         let mut helps: Vec<&str> = Vec::new();
-        helps.push("<C-n/C-p> Select item");
+        helps.push("<j/k> Select item");
         if !matches!(self.cur.item, PageItems::Output) {
-            helps.push("<Left/Right> Select current item value");
+            helps.push("<h/l> Select current item value");
         }
         helps.push("<Enter> Generate uuid");
         if matches!(self.cur.item, PageItems::Output) {
-            helps.push("<Down/Up> Scroll down/up");
+            helps.push("<C-e/C-y> Scroll down/up");
             helps.push("<y> Copy to clipboard");
             helps.push("<p> Paste from clipboard");
         }

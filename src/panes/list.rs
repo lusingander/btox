@@ -55,8 +55,8 @@ impl Pane for ListPane {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('n', Ctrl) => Some(Msg::ListPaneSelectNext),
-            key_code_char!('p', Ctrl) => Some(Msg::ListPaneSelectPrev),
+            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::ListPaneSelectNext),
+            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::ListPaneSelectPrev),
             _ => None,
         }
     }
@@ -118,6 +118,6 @@ impl Pane for ListPane {
     }
 
     fn helps(&self) -> Vec<&str> {
-        vec!["<C-n/C-p> Select item", "<Tab> Switch pane"]
+        vec!["<j/k> Select item", "<Tab> Switch pane"]
     }
 }

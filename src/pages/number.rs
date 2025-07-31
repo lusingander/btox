@@ -94,8 +94,10 @@ impl Page for NumberBasePage {
 
         match key {
             key_code!(KeyCode::Esc) => Some(Msg::Quit),
-            key_code_char!('n', Ctrl) => Some(Msg::NumberBasePageSelectNextItem),
-            key_code_char!('p', Ctrl) => Some(Msg::NumberBasePageSelectPrevItem),
+            key_code_char!('j') | key_code!(KeyCode::Down) => {
+                Some(Msg::NumberBasePageSelectNextItem)
+            }
+            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::NumberBasePageSelectPrevItem),
             key_code_char!('l') | key_code!(KeyCode::Right) => {
                 Some(Msg::NumberBasePageCurrentItemSelectNext)
             }
@@ -193,7 +195,7 @@ impl Page for NumberBasePage {
             helps.push("<Esc> End edit");
         } else {
             helps.push("<e> Edit");
-            helps.push("<C-n/C-p> Select item");
+            helps.push("<j/k> Select item");
             helps.push("<y> Copy to clipboard");
             helps.push("<p> Paste from clipboard");
         }
