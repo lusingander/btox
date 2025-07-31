@@ -8,12 +8,12 @@ my personal toolbox app
 
 ### Common keybindings
 
-| Key                              | Description  |
-| -------------------------------- | ------------ |
-| <kbd>j</kbd>                     | cursor down  |
-| <kbd>k</kbd>                     | cursor up    |
-| <kbd>Tab</kbd>                   | toggle focus |
-| <kbd>Ctrl+C</kbd> <kbd>Esc</kbd> | quit         |
+| Key               | Description  |
+| ----------------- | ------------ |
+| <kbd>j</kbd>      | cursor down  |
+| <kbd>k</kbd>      | cursor up    |
+| <kbd>Tab</kbd>    | toggle focus |
+| <kbd>Ctrl+C</kbd> | quit         |
 
 ## Features / Screenshots
 

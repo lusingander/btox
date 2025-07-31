@@ -108,7 +108,6 @@ impl VersionItemSelect {
 impl Page for UuidPage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
         match key {
-            key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UuidPageSelectNextItem),
             key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UuidPageSelectPrevItem),
             key_code_char!('l') | key_code!(KeyCode::Right) => {

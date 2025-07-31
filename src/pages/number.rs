@@ -93,7 +93,6 @@ impl Page for NumberBasePage {
         }
 
         match key {
-            key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('j') | key_code!(KeyCode::Down) => {
                 Some(Msg::NumberBasePageSelectNextItem)
             }

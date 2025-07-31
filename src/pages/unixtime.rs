@@ -104,7 +104,6 @@ impl Page for UnixTimePage {
         }
 
         match key {
-            key_code!(KeyCode::Esc) => Some(Msg::Quit),
             key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UnixTimePageSelectNextItem),
             key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UnixTimePageSelectPrevItem),
             key_code_char!('l') | key_code!(KeyCode::Right) => {
