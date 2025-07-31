@@ -309,10 +309,10 @@ impl NumberBasePage {
         };
         match updated_value {
             Ok(value) => {
-                self.update_binary_input(format!("{:b}", value));
-                self.update_octal_input(format!("{:o}", value));
-                self.update_decimal_input(format!("{}", value));
-                self.update_hex_input(format!("{:x}", value));
+                self.update_binary_input(format!("{value:b}"));
+                self.update_octal_input(format!("{value:o}"));
+                self.update_decimal_input(format!("{value}"));
+                self.update_hex_input(format!("{value:x}"));
                 self.update_hex_case();
                 self.cur.binary_status = String::new();
                 self.cur.octal_status = String::new();

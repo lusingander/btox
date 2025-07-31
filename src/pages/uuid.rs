@@ -188,7 +188,7 @@ impl Page for UuidPage {
         f.render_widget(version_sel, chunks[2]);
 
         let count_sel = Select::new(
-            (1..=COUNT_MAX).map(|i| format!("{}", i)).collect(),
+            (1..=COUNT_MAX).map(|i| format!("{i}")).collect(),
             self.cur.count - 1,
             self.cur.item == PageItems::Count,
             self.focused,
@@ -317,7 +317,7 @@ impl UuidPage {
         self.ids = ids;
 
         if failure_count > 0 {
-            let msg = format!("Could not parse {} lines of string to UUID", failure_count);
+            let msg = format!("Could not parse {failure_count} lines of string to UUID");
             Some(Msg::NotifyWarn(msg))
         } else {
             None

@@ -81,7 +81,7 @@ impl Pane for ListPane {
             .into_iter()
             .enumerate()
             .map(|(i, label)| {
-                let item = ListItem::new(format!(" {} ", label));
+                let item = ListItem::new(format!(" {label} "));
                 if i == self.selected as usize {
                     let selected_color = if self.focused {
                         Color::Blue
