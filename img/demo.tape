@@ -62,6 +62,22 @@ Type "j"
 Sleep 500ms
 Tab
 
+# base64
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Copy "btox"
+Type "p"
+Sleep 500ms
+Screenshot ./img/base64.png
+Sleep 500ms
+
+Tab
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Tab
+
 # hash
 Sleep 500ms
 Type "j"
