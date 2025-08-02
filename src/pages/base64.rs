@@ -125,7 +125,7 @@ impl Page for Base64Page {
     }
 
     fn render(&mut self, f: &mut Frame, area: Rect) {
-        let chunks = vertical![==2, >=0, ==1, ==5].split(area);
+        let chunks = vertical![==2, >=0, ==1, >=0].split(area);
 
         let eod_sel = Select::new(
             EncodeOrDecodeSelect::strings_vec(),
