@@ -16,52 +16,78 @@ pub enum Msg {
     ToolPaneSelectUnixTimePage,
     ToolPaneSelectNumberBasePage,
 
-    UuidPageSelectNextItem,
-    UuidPageSelectPrevItem,
-    UuidPageCurrentItemSelectNext,
-    UuidPageCurrentItemSelectPrev,
-    UuidPageScrollDown,
-    UuidPageScrollUp,
-    UuidPageGenerate,
-    UuidPageCopy,
-    UuidPagePaste,
+    Page(PageMsg),
+}
 
-    UlidPageSelectNextItem,
-    UlidPageSelectPrevItem,
-    UlidPageCurrentItemSelectNext,
-    UlidPageCurrentItemSelectPrev,
-    UlidPageScrollDown,
-    UlidPageScrollUp,
-    UlidPageGenerate,
-    UlidPageCopy,
-    UlidPagePaste,
+#[derive(Debug, Clone)]
+pub enum PageMsg {
+    Uuid(UuidMsg),
+    Ulid(UlidMsg),
+    Hash(HashMsg),
+    UnixTime(UnixTimeMsg),
+    NumberBase(NumberBaseMsg),
+}
 
-    HashPageSelectNextItem,
-    HashPageSelectPrevItem,
-    HashPageCurrentItemSelectNext,
-    HashPageCurrentItemSelectPrev,
-    HashPageScrollDown,
-    HashPageScrollUp,
-    HashPageCopy,
-    HashPagePaste,
+#[derive(Debug, Clone)]
+pub enum UuidMsg {
+    SelectNextItem,
+    SelectPrevItem,
+    CurrentItemSelectNext,
+    CurrentItemSelectPrev,
+    ScrollDown,
+    ScrollUp,
+    Generate,
+    Copy,
+    Paste,
+}
 
-    UnixTimePageSelectNextItem,
-    UnixTimePageSelectPrevItem,
-    UnixTimePageCurrentItemSelectNext,
-    UnixTimePageCurrentItemSelectPrev,
-    UnixTimePageEditStart,
-    UnixTimePageEditEnd,
-    UnixTimePageEditKeyEvent(ratatui::crossterm::event::KeyEvent),
-    UnixTimePageCopy,
-    UnixTimePagePaste,
+#[derive(Debug, Clone)]
+pub enum UlidMsg {
+    SelectNextItem,
+    SelectPrevItem,
+    CurrentItemSelectNext,
+    CurrentItemSelectPrev,
+    ScrollDown,
+    ScrollUp,
+    Generate,
+    Copy,
+    Paste,
+}
 
-    NumberBasePageSelectNextItem,
-    NumberBasePageSelectPrevItem,
-    NumberBasePageCurrentItemSelectNext,
-    NumberBasePageCurrentItemSelectPrev,
-    NumberBasePageEditStart,
-    NumberBasePageEditEnd,
-    NumberBasePageEditKeyEvent(ratatui::crossterm::event::KeyEvent),
-    NumberBasePageCopy,
-    NumberBasePagePaste,
+#[derive(Debug, Clone)]
+pub enum HashMsg {
+    SelectNextItem,
+    SelectPrevItem,
+    CurrentItemSelectNext,
+    CurrentItemSelectPrev,
+    ScrollDown,
+    ScrollUp,
+    Copy,
+    Paste,
+}
+
+#[derive(Debug, Clone)]
+pub enum UnixTimeMsg {
+    SelectNextItem,
+    SelectPrevItem,
+    CurrentItemSelectNext,
+    CurrentItemSelectPrev,
+    EditStart,
+    EditEnd,
+    EditKeyEvent(ratatui::crossterm::event::KeyEvent),
+    Copy,
+    Paste,
+}
+
+#[derive(Debug, Clone)]
+pub enum NumberBaseMsg {
+    SelectNextItem,
+    SelectPrevItem,
+    CurrentItemSelectNext,
+    CurrentItemSelectPrev,
+    EditStart,
+    EditEnd,
+    EditKeyEvent(ratatui::crossterm::event::KeyEvent),
+    Copy,
+    Paste,
 }

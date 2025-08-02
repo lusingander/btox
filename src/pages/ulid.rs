@@ -5,7 +5,7 @@ use ulid::Ulid;
 
 use crate::{
     fn_next_prev_mut, fn_str_map, key_code, key_code_char,
-    msg::Msg,
+    msg::{Msg, PageMsg, UlidMsg},
     pages::{page::Page, util},
     widget::{
         scroll::{ScrollOutput, ScrollOutputState},
@@ -69,54 +69,52 @@ impl CaseItemSelect {
 
 impl Page for UlidPage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
-        match key {
-            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UlidPageSelectNextItem),
-            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UlidPageSelectPrevItem),
-            key_code_char!('l') | key_code!(KeyCode::Right) => {
-                Some(Msg::UlidPageCurrentItemSelectNext)
-            }
-            key_code_char!('h') | key_code!(KeyCode::Left) => {
-                Some(Msg::UlidPageCurrentItemSelectPrev)
-            }
-            key_code_char!('e', Ctrl) => Some(Msg::UlidPageScrollDown),
-            key_code_char!('y', Ctrl) => Some(Msg::UlidPageScrollUp),
-            key_code_char!('y') => Some(Msg::UlidPageCopy),
-            key_code_char!('p') => Some(Msg::UlidPagePaste),
-            key_code!(KeyCode::Enter) => Some(Msg::UlidPageGenerate),
-            _ => None,
-        }
+        let msg = match key {
+            key_code_char!('j') | key_code!(KeyCode::Down) => UlidMsg::SelectNextItem,
+            key_code_char!('k') | key_code!(KeyCode::Up) => UlidMsg::SelectPrevItem,
+            key_code_char!('l') | key_code!(KeyCode::Right) => UlidMsg::CurrentItemSelectNext,
+            key_code_char!('h') | key_code!(KeyCode::Left) => UlidMsg::CurrentItemSelectPrev,
+            key_code_char!('e', Ctrl) => UlidMsg::ScrollDown,
+            key_code_char!('y', Ctrl) => UlidMsg::ScrollUp,
+            key_code_char!('y') => UlidMsg::Copy,
+            key_code_char!('p') => UlidMsg::Paste,
+            key_code!(KeyCode::Enter) => UlidMsg::Generate,
+            _ => return None,
+        };
+        Some(Msg::Page(PageMsg::Ulid(msg)))
     }
 
-    fn update(&mut self, msg: Msg) -> Option<Msg> {
-        match msg {
-            Msg::UlidPageSelectNextItem => {
-                self.select_next_item();
+    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+        if let PageMsg::Ulid(msg) = msg {
+            match msg {
+                UlidMsg::SelectNextItem => {
+                    self.select_next_item();
+                }
+                UlidMsg::SelectPrevItem => {
+                    self.select_prev_item();
+                }
+                UlidMsg::CurrentItemSelectNext => {
+                    self.current_item_select_next();
+                }
+                UlidMsg::CurrentItemSelectPrev => {
+                    self.current_item_select_prev();
+                }
+                UlidMsg::ScrollDown => {
+                    self.scroll_down();
+                }
+                UlidMsg::ScrollUp => {
+                    self.scroll_up();
+                }
+                UlidMsg::Generate => {
+                    self.generate_ulid();
+                }
+                UlidMsg::Copy => {
+                    return self.copy_to_clipboard();
+                }
+                UlidMsg::Paste => {
+                    return self.paste_from_clipboard();
+                }
             }
-            Msg::UlidPageSelectPrevItem => {
-                self.select_prev_item();
-            }
-            Msg::UlidPageCurrentItemSelectNext => {
-                self.current_item_select_next();
-            }
-            Msg::UlidPageCurrentItemSelectPrev => {
-                self.current_item_select_prev();
-            }
-            Msg::UlidPageScrollDown => {
-                self.scroll_down();
-            }
-            Msg::UlidPageScrollUp => {
-                self.scroll_up();
-            }
-            Msg::UlidPageGenerate => {
-                self.generate_ulid();
-            }
-            Msg::UlidPageCopy => {
-                return self.copy_to_clipboard();
-            }
-            Msg::UlidPagePaste => {
-                return self.paste_from_clipboard();
-            }
-            _ => {}
         }
         None
     }

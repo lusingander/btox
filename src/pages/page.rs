@@ -1,10 +1,10 @@
 use ratatui::{layout::Rect, Frame};
 
-use crate::msg::Msg;
+use crate::msg::{Msg, PageMsg};
 
 pub trait Page {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg>;
-    fn update(&mut self, msg: Msg) -> Option<Msg>;
+    fn update(&mut self, msg: &PageMsg) -> Option<Msg>;
 
     fn render(&mut self, f: &mut Frame, area: Rect);
 

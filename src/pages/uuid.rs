@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     fn_next_prev_mut, fn_str_map, key_code, key_code_char,
-    msg::Msg,
+    msg::{Msg, PageMsg, UuidMsg},
     pages::{page::Page, util},
     widget::{
         scroll::{ScrollOutput, ScrollOutputState},
@@ -107,54 +107,52 @@ impl VersionItemSelect {
 
 impl Page for UuidPage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
-        match key {
-            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UuidPageSelectNextItem),
-            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UuidPageSelectPrevItem),
-            key_code_char!('l') | key_code!(KeyCode::Right) => {
-                Some(Msg::UuidPageCurrentItemSelectNext)
-            }
-            key_code_char!('h') | key_code!(KeyCode::Left) => {
-                Some(Msg::UuidPageCurrentItemSelectPrev)
-            }
-            key_code_char!('e', Ctrl) => Some(Msg::UuidPageScrollDown),
-            key_code_char!('y', Ctrl) => Some(Msg::UuidPageScrollUp),
-            key_code_char!('y') => Some(Msg::UuidPageCopy),
-            key_code_char!('p') => Some(Msg::UuidPagePaste),
-            key_code!(KeyCode::Enter) => Some(Msg::UuidPageGenerate),
-            _ => None,
-        }
+        let msg = match key {
+            key_code_char!('j') | key_code!(KeyCode::Down) => UuidMsg::SelectNextItem,
+            key_code_char!('k') | key_code!(KeyCode::Up) => UuidMsg::SelectPrevItem,
+            key_code_char!('l') | key_code!(KeyCode::Right) => UuidMsg::CurrentItemSelectNext,
+            key_code_char!('h') | key_code!(KeyCode::Left) => UuidMsg::CurrentItemSelectPrev,
+            key_code_char!('e', Ctrl) => UuidMsg::ScrollDown,
+            key_code_char!('y', Ctrl) => UuidMsg::ScrollUp,
+            key_code_char!('y') => UuidMsg::Copy,
+            key_code_char!('p') => UuidMsg::Paste,
+            key_code!(KeyCode::Enter) => UuidMsg::Generate,
+            _ => return None,
+        };
+        Some(Msg::Page(PageMsg::Uuid(msg)))
     }
 
-    fn update(&mut self, msg: Msg) -> Option<Msg> {
-        match msg {
-            Msg::UuidPageSelectNextItem => {
-                self.select_next_item();
+    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+        if let PageMsg::Uuid(msg) = msg {
+            match msg {
+                UuidMsg::SelectNextItem => {
+                    self.select_next_item();
+                }
+                UuidMsg::SelectPrevItem => {
+                    self.select_prev_item();
+                }
+                UuidMsg::CurrentItemSelectNext => {
+                    self.current_item_select_next();
+                }
+                UuidMsg::CurrentItemSelectPrev => {
+                    self.current_item_select_prev();
+                }
+                UuidMsg::ScrollDown => {
+                    self.scroll_down();
+                }
+                UuidMsg::ScrollUp => {
+                    self.scroll_up();
+                }
+                UuidMsg::Generate => {
+                    self.generate_uuid();
+                }
+                UuidMsg::Copy => {
+                    return self.copy_to_clipboard();
+                }
+                UuidMsg::Paste => {
+                    return self.paste_from_clipboard();
+                }
             }
-            Msg::UuidPageSelectPrevItem => {
-                self.select_prev_item();
-            }
-            Msg::UuidPageCurrentItemSelectNext => {
-                self.current_item_select_next();
-            }
-            Msg::UuidPageCurrentItemSelectPrev => {
-                self.current_item_select_prev();
-            }
-            Msg::UuidPageScrollDown => {
-                self.scroll_down();
-            }
-            Msg::UuidPageScrollUp => {
-                self.scroll_up();
-            }
-            Msg::UuidPageGenerate => {
-                self.generate_uuid();
-            }
-            Msg::UuidPageCopy => {
-                return self.copy_to_clipboard();
-            }
-            Msg::UuidPagePaste => {
-                return self.paste_from_clipboard();
-            }
-            _ => {}
         }
         None
     }

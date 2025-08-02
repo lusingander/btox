@@ -13,7 +13,7 @@ use sha2::{Sha224, Sha256, Sha384, Sha512, Sha512_224, Sha512_256};
 
 use crate::{
     fn_next_prev_mut, fn_str_map, key_code, key_code_char,
-    msg::Msg,
+    msg::{HashMsg, Msg, PageMsg},
     pages::{page::Page, util},
     widget::{
         scroll::{ScrollOutput, ScrollOutputState},
@@ -109,50 +109,48 @@ impl EncodeItemSelect {
 
 impl Page for HashPage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
-        match key {
-            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::HashPageSelectNextItem),
-            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::HashPageSelectPrevItem),
-            key_code_char!('l') | key_code!(KeyCode::Right) => {
-                Some(Msg::HashPageCurrentItemSelectNext)
-            }
-            key_code_char!('h') | key_code!(KeyCode::Left) => {
-                Some(Msg::HashPageCurrentItemSelectPrev)
-            }
-            key_code_char!('e', Ctrl) => Some(Msg::HashPageScrollDown),
-            key_code_char!('y', Ctrl) => Some(Msg::HashPageScrollUp),
-            key_code_char!('y') => Some(Msg::HashPageCopy),
-            key_code_char!('p') => Some(Msg::HashPagePaste),
-            _ => None,
-        }
+        let msg = match key {
+            key_code_char!('j') | key_code!(KeyCode::Down) => HashMsg::SelectNextItem,
+            key_code_char!('k') | key_code!(KeyCode::Up) => HashMsg::SelectPrevItem,
+            key_code_char!('l') | key_code!(KeyCode::Right) => HashMsg::CurrentItemSelectNext,
+            key_code_char!('h') | key_code!(KeyCode::Left) => HashMsg::CurrentItemSelectPrev,
+            key_code_char!('e', Ctrl) => HashMsg::ScrollDown,
+            key_code_char!('y', Ctrl) => HashMsg::ScrollUp,
+            key_code_char!('y') => HashMsg::Copy,
+            key_code_char!('p') => HashMsg::Paste,
+            _ => return None,
+        };
+        Some(Msg::Page(PageMsg::Hash(msg)))
     }
 
-    fn update(&mut self, msg: Msg) -> Option<Msg> {
-        match msg {
-            Msg::HashPageSelectNextItem => {
-                self.select_next_item();
+    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+        if let PageMsg::Hash(msg) = msg {
+            match msg {
+                HashMsg::SelectNextItem => {
+                    self.select_next_item();
+                }
+                HashMsg::SelectPrevItem => {
+                    self.select_prev_item();
+                }
+                HashMsg::CurrentItemSelectNext => {
+                    self.current_item_select_next();
+                }
+                HashMsg::CurrentItemSelectPrev => {
+                    self.current_item_select_prev();
+                }
+                HashMsg::ScrollDown => {
+                    self.scroll_down();
+                }
+                HashMsg::ScrollUp => {
+                    self.scroll_up();
+                }
+                HashMsg::Copy => {
+                    return self.copy_to_clipboard();
+                }
+                HashMsg::Paste => {
+                    self.paste_from_clipboard();
+                }
             }
-            Msg::HashPageSelectPrevItem => {
-                self.select_prev_item();
-            }
-            Msg::HashPageCurrentItemSelectNext => {
-                self.current_item_select_next();
-            }
-            Msg::HashPageCurrentItemSelectPrev => {
-                self.current_item_select_prev();
-            }
-            Msg::HashPageScrollDown => {
-                self.scroll_down();
-            }
-            Msg::HashPageScrollUp => {
-                self.scroll_up();
-            }
-            Msg::HashPageCopy => {
-                return self.copy_to_clipboard();
-            }
-            Msg::HashPagePaste => {
-                self.paste_from_clipboard();
-            }
-            _ => {}
         }
         None
     }

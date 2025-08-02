@@ -11,7 +11,7 @@ use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
     fn_next_prev_mut, fn_str_map, key_code, key_code_char,
-    msg::Msg,
+    msg::{Msg, NumberBaseMsg, PageMsg},
     pages::{page::Page, util},
     widget::select::Select,
 };
@@ -85,61 +85,61 @@ impl CaseItemSelect {
 
 impl Page for NumberBasePage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
-        if self.cur.edit {
-            return match key {
-                key_code!(KeyCode::Esc) => Some(Msg::NumberBasePageEditEnd),
-                _ => Some(Msg::NumberBasePageEditKeyEvent(key)),
-            };
-        }
-
-        match key {
-            key_code_char!('j') | key_code!(KeyCode::Down) => {
-                Some(Msg::NumberBasePageSelectNextItem)
+        let msg = if self.cur.edit {
+            match key {
+                key_code!(KeyCode::Esc) => NumberBaseMsg::EditEnd,
+                _ => NumberBaseMsg::EditKeyEvent(key),
             }
-            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::NumberBasePageSelectPrevItem),
-            key_code_char!('l') | key_code!(KeyCode::Right) => {
-                Some(Msg::NumberBasePageCurrentItemSelectNext)
+        } else {
+            match key {
+                key_code_char!('j') | key_code!(KeyCode::Down) => NumberBaseMsg::SelectNextItem,
+                key_code_char!('k') | key_code!(KeyCode::Up) => NumberBaseMsg::SelectPrevItem,
+                key_code_char!('l') | key_code!(KeyCode::Right) => {
+                    NumberBaseMsg::CurrentItemSelectNext
+                }
+                key_code_char!('h') | key_code!(KeyCode::Left) => {
+                    NumberBaseMsg::CurrentItemSelectPrev
+                }
+                key_code_char!('y') => NumberBaseMsg::Copy,
+                key_code_char!('p') => NumberBaseMsg::Paste,
+                key_code_char!('e') => NumberBaseMsg::EditStart,
+                _ => return None,
             }
-            key_code_char!('h') | key_code!(KeyCode::Left) => {
-                Some(Msg::NumberBasePageCurrentItemSelectPrev)
-            }
-            key_code_char!('y') => Some(Msg::NumberBasePageCopy),
-            key_code_char!('p') => Some(Msg::NumberBasePagePaste),
-            key_code_char!('e') => Some(Msg::NumberBasePageEditStart),
-            _ => None,
-        }
+        };
+        Some(Msg::Page(PageMsg::NumberBase(msg)))
     }
 
-    fn update(&mut self, msg: Msg) -> Option<Msg> {
-        match msg {
-            Msg::NumberBasePageSelectNextItem => {
-                self.select_next_item();
+    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+        if let PageMsg::NumberBase(msg) = msg {
+            match msg {
+                NumberBaseMsg::SelectNextItem => {
+                    self.select_next_item();
+                }
+                NumberBaseMsg::SelectPrevItem => {
+                    self.select_prev_item();
+                }
+                NumberBaseMsg::CurrentItemSelectNext => {
+                    self.current_item_select_next();
+                }
+                NumberBaseMsg::CurrentItemSelectPrev => {
+                    self.current_item_select_prev();
+                }
+                NumberBaseMsg::Copy => {
+                    return self.copy_to_clipboard();
+                }
+                NumberBaseMsg::Paste => {
+                    self.paste_from_clipboard();
+                }
+                NumberBaseMsg::EditStart => {
+                    self.edit_start();
+                }
+                NumberBaseMsg::EditEnd => {
+                    self.edit_end();
+                }
+                NumberBaseMsg::EditKeyEvent(key) => {
+                    self.edit(*key);
+                }
             }
-            Msg::NumberBasePageSelectPrevItem => {
-                self.select_prev_item();
-            }
-            Msg::NumberBasePageCurrentItemSelectNext => {
-                self.current_item_select_next();
-            }
-            Msg::NumberBasePageCurrentItemSelectPrev => {
-                self.current_item_select_prev();
-            }
-            Msg::NumberBasePageCopy => {
-                return self.copy_to_clipboard();
-            }
-            Msg::NumberBasePagePaste => {
-                self.paste_from_clipboard();
-            }
-            Msg::NumberBasePageEditStart => {
-                self.edit_start();
-            }
-            Msg::NumberBasePageEditEnd => {
-                self.edit_end();
-            }
-            Msg::NumberBasePageEditKeyEvent(key) => {
-                self.edit(key);
-            }
-            _ => {}
         }
         None
     }

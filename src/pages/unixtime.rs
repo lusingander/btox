@@ -12,7 +12,7 @@ use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{
     fn_next_prev_mut, fn_str_map, key_code, key_code_char,
-    msg::Msg,
+    msg::{Msg, PageMsg, UnixTimeMsg},
     pages::{page::Page, util},
     widget::select::Select,
 };
@@ -96,59 +96,61 @@ impl TimeZoneItemSelect {
 
 impl Page for UnixTimePage {
     fn handle_key(&self, key: ratatui::crossterm::event::KeyEvent) -> Option<Msg> {
-        if self.cur.edit {
-            return match key {
-                key_code!(KeyCode::Esc) => Some(Msg::UnixTimePageEditEnd),
-                _ => Some(Msg::UnixTimePageEditKeyEvent(key)),
-            };
-        }
-
-        match key {
-            key_code_char!('j') | key_code!(KeyCode::Down) => Some(Msg::UnixTimePageSelectNextItem),
-            key_code_char!('k') | key_code!(KeyCode::Up) => Some(Msg::UnixTimePageSelectPrevItem),
-            key_code_char!('l') | key_code!(KeyCode::Right) => {
-                Some(Msg::UnixTimePageCurrentItemSelectNext)
+        let msg = if self.cur.edit {
+            match key {
+                key_code!(KeyCode::Esc) => UnixTimeMsg::EditEnd,
+                _ => UnixTimeMsg::EditKeyEvent(key),
             }
-            key_code_char!('h') | key_code!(KeyCode::Left) => {
-                Some(Msg::UnixTimePageCurrentItemSelectPrev)
+        } else {
+            match key {
+                key_code_char!('j') | key_code!(KeyCode::Down) => UnixTimeMsg::SelectNextItem,
+                key_code_char!('k') | key_code!(KeyCode::Up) => UnixTimeMsg::SelectPrevItem,
+                key_code_char!('l') | key_code!(KeyCode::Right) => {
+                    UnixTimeMsg::CurrentItemSelectNext
+                }
+                key_code_char!('h') | key_code!(KeyCode::Left) => {
+                    UnixTimeMsg::CurrentItemSelectPrev
+                }
+                key_code_char!('y') => UnixTimeMsg::Copy,
+                key_code_char!('p') => UnixTimeMsg::Paste,
+                key_code_char!('e') => UnixTimeMsg::EditStart,
+                _ => return None,
             }
-            key_code_char!('y') => Some(Msg::UnixTimePageCopy),
-            key_code_char!('p') => Some(Msg::UnixTimePagePaste),
-            key_code_char!('e') => Some(Msg::UnixTimePageEditStart),
-            _ => None,
-        }
+        };
+        Some(Msg::Page(PageMsg::UnixTime(msg)))
     }
 
-    fn update(&mut self, msg: Msg) -> Option<Msg> {
-        match msg {
-            Msg::UnixTimePageSelectNextItem => {
-                self.select_next_item();
+    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+        if let PageMsg::UnixTime(msg) = msg {
+            match msg {
+                UnixTimeMsg::SelectNextItem => {
+                    self.select_next_item();
+                }
+                UnixTimeMsg::SelectPrevItem => {
+                    self.select_prev_item();
+                }
+                UnixTimeMsg::CurrentItemSelectNext => {
+                    self.current_item_select_next();
+                }
+                UnixTimeMsg::CurrentItemSelectPrev => {
+                    self.current_item_select_prev();
+                }
+                UnixTimeMsg::Copy => {
+                    return self.copy_to_clipboard();
+                }
+                UnixTimeMsg::Paste => {
+                    self.paste_from_clipboard();
+                }
+                UnixTimeMsg::EditStart => {
+                    self.edit_start();
+                }
+                UnixTimeMsg::EditEnd => {
+                    self.edit_end();
+                }
+                UnixTimeMsg::EditKeyEvent(key) => {
+                    self.edit(*key);
+                }
             }
-            Msg::UnixTimePageSelectPrevItem => {
-                self.select_prev_item();
-            }
-            Msg::UnixTimePageCurrentItemSelectNext => {
-                self.current_item_select_next();
-            }
-            Msg::UnixTimePageCurrentItemSelectPrev => {
-                self.current_item_select_prev();
-            }
-            Msg::UnixTimePageCopy => {
-                return self.copy_to_clipboard();
-            }
-            Msg::UnixTimePagePaste => {
-                self.paste_from_clipboard();
-            }
-            Msg::UnixTimePageEditStart => {
-                self.edit_start();
-            }
-            Msg::UnixTimePageEditEnd => {
-                self.edit_end();
-            }
-            Msg::UnixTimePageEditKeyEvent(key) => {
-                self.edit(key);
-            }
-            _ => {}
         }
         None
     }
