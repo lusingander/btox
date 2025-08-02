@@ -45,6 +45,23 @@ Type "j"
 Sleep 500ms
 Tab
 
+# ulid
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type@200ms "llll"
+Sleep 500ms
+Enter
+Sleep 500ms
+Screenshot ./img/ulid.png
+Sleep 500ms
+
+Tab
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Tab
+
 # hash
 Sleep 500ms
 Type "j"
