@@ -4,7 +4,7 @@ use ratatui::{
     crossterm::event::KeyCode,
     layout::Rect,
     style::{Color, Style},
-    widgets::{Block, Padding, Paragraph, Wrap},
+    widgets::{Block, Borders, Padding, Paragraph, Wrap},
     Frame,
 };
 use ratatui_macros::vertical;
@@ -31,23 +31,23 @@ struct CurrentStatus {
     input: String,
     input_state: ScrollOutputState,
     output: String,
+    status: InputStatus,
 }
 
 impl Base64Page {
     pub fn new(focused: bool) -> Base64Page {
-        let eod_sel = EncodeOrDecodeSelect::default();
-        let input = String::new();
-        let output = calculate_base64(&input, eod_sel);
         Base64Page {
             focused,
-            cur: CurrentStatus {
-                eod_sel,
-                input,
-                output,
-                ..Default::default()
-            },
+            cur: CurrentStatus::default(),
         }
     }
+}
+
+#[derive(Default)]
+enum InputStatus {
+    #[default]
+    None,
+    Warn(String),
 }
 
 #[derive(Default)]
@@ -125,7 +125,7 @@ impl Page for Base64Page {
     }
 
     fn render(&mut self, f: &mut Frame, area: Rect) {
-        let chunks = vertical![==2, >=0, ==5].split(area);
+        let chunks = vertical![==2, >=0, ==1, ==5].split(area);
 
         let eod_sel = Select::new(
             EncodeOrDecodeSelect::strings_vec(),
@@ -139,6 +139,17 @@ impl Page for Base64Page {
         let input = ScrollOutput::new(input_text, self.focused, self.cur.item == PageItems::Input)
             .title("Input");
         f.render_stateful_widget(input, chunks[1], &mut self.cur.input_state);
+
+        if let InputStatus::Warn(status) = &self.cur.status {
+            let status_style = Style::default().fg(Color::Red);
+            let status = Paragraph::new(status.as_str()).block(
+                Block::default()
+                    .borders(Borders::empty())
+                    .style(status_style)
+                    .padding(Padding::horizontal(1)),
+            );
+            f.render_widget(status, chunks[2]);
+        }
 
         let output_style = if self.focused {
             if self.cur.item == PageItems::Output {
@@ -159,7 +170,7 @@ impl Page for Base64Page {
                     .padding(Padding::horizontal(1)),
             )
             .wrap(Wrap { trim: false });
-        f.render_widget(output, chunks[2]);
+        f.render_widget(output, chunks[3]);
     }
 
     fn focus(&mut self) {
@@ -249,18 +260,26 @@ impl Base64Page {
     }
 
     fn update_output(&mut self) {
-        self.cur.output = calculate_base64(&self.cur.input, self.cur.eod_sel);
+        (self.cur.output, self.cur.status) = calculate_base64(&self.cur.input, self.cur.eod_sel);
     }
 }
 
-fn calculate_base64(input: &str, eod_sel: EncodeOrDecodeSelect) -> String {
+fn calculate_base64(input: &str, eod_sel: EncodeOrDecodeSelect) -> (String, InputStatus) {
     match eod_sel {
-        EncodeOrDecodeSelect::Encode => general_purpose::STANDARD.encode(input),
+        EncodeOrDecodeSelect::Encode => {
+            (general_purpose::STANDARD.encode(input), InputStatus::None)
+        }
         EncodeOrDecodeSelect::Decode => {
             if let Ok(decoded) = general_purpose::STANDARD.decode(input) {
-                String::from_utf8_lossy(&decoded).to_string()
+                (
+                    String::from_utf8_lossy(&decoded).to_string(),
+                    InputStatus::None,
+                )
             } else {
-                "Invalid Base64".to_string()
+                (
+                    String::new(),
+                    InputStatus::Warn("invalid base64 input".into()),
+                )
             }
         }
     }
