@@ -14,6 +14,7 @@ use crate::{fn_str_map, key_code, key_code_char, msg::Msg, panes::pane::Pane};
 #[zero_indexed_enum]
 enum PageType {
     Uuid,
+    Ulid,
     Hash,
     UnixTime,
     NumberBase,
@@ -23,6 +24,7 @@ impl PageType {
     fn select_msg(&self) -> Msg {
         match self {
             PageType::Uuid => Msg::ToolPaneSelectUuidPage,
+            PageType::Ulid => Msg::ToolPaneSelectUlidPage,
             PageType::Hash => Msg::ToolPaneSelectHashPage,
             PageType::UnixTime => Msg::ToolPaneSelectUnixTimePage,
             PageType::NumberBase => Msg::ToolPaneSelectNumberBasePage,
@@ -31,6 +33,7 @@ impl PageType {
 
     fn_str_map! {
         PageType::Uuid => "UUID",
+        PageType::Ulid => "ULID",
         PageType::Hash => "Hash",
         PageType::UnixTime => "Unix time",
         PageType::NumberBase => "Number base",

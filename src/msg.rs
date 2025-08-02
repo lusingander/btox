@@ -11,6 +11,7 @@ pub enum Msg {
     NotifyError(String),
 
     ToolPaneSelectUuidPage,
+    ToolPaneSelectUlidPage,
     ToolPaneSelectHashPage,
     ToolPaneSelectUnixTimePage,
     ToolPaneSelectNumberBasePage,
@@ -24,6 +25,16 @@ pub enum Msg {
     UuidPageGenerate,
     UuidPageCopy,
     UuidPagePaste,
+
+    UlidPageSelectNextItem,
+    UlidPageSelectPrevItem,
+    UlidPageCurrentItemSelectNext,
+    UlidPageCurrentItemSelectPrev,
+    UlidPageScrollDown,
+    UlidPageScrollUp,
+    UlidPageGenerate,
+    UlidPageCopy,
+    UlidPagePaste,
 
     HashPageSelectNextItem,
     HashPageSelectPrevItem,

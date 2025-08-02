@@ -8,7 +8,8 @@ use ratatui::{
 use crate::{
     msg::Msg,
     pages::{
-        hash::HashPage, number::NumberBasePage, page::Page, unixtime::UnixTimePage, uuid::UuidPage,
+        hash::HashPage, number::NumberBasePage, page::Page, ulid::UlidPage, unixtime::UnixTimePage,
+        uuid::UuidPage,
     },
     panes::pane::Pane,
 };
@@ -36,6 +37,9 @@ impl Pane for ToolPane {
         match msg {
             Msg::ToolPaneSelectUuidPage => {
                 self.page = Box::new(UuidPage::new(self.focused));
+            }
+            Msg::ToolPaneSelectUlidPage => {
+                self.page = Box::new(UlidPage::new(self.focused));
             }
             Msg::ToolPaneSelectHashPage => {
                 self.page = Box::new(HashPage::new(self.focused));
