@@ -120,7 +120,7 @@ impl Page for UnixTimePage {
         Some(Msg::Page(PageMsg::UnixTime(msg)))
     }
 
-    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+    fn update(&mut self, msg: PageMsg) -> Option<Msg> {
         if let PageMsg::UnixTime(msg) = msg {
             match msg {
                 UnixTimeMsg::SelectNextItem => {
@@ -148,7 +148,7 @@ impl Page for UnixTimePage {
                     self.edit_end();
                 }
                 UnixTimeMsg::EditKeyEvent(key) => {
-                    self.edit(*key);
+                    self.edit(key);
                 }
             }
         }

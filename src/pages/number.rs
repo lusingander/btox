@@ -109,7 +109,7 @@ impl Page for NumberBasePage {
         Some(Msg::Page(PageMsg::NumberBase(msg)))
     }
 
-    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+    fn update(&mut self, msg: PageMsg) -> Option<Msg> {
         if let PageMsg::NumberBase(msg) = msg {
             match msg {
                 NumberBaseMsg::SelectNextItem => {
@@ -137,7 +137,7 @@ impl Page for NumberBasePage {
                     self.edit_end();
                 }
                 NumberBaseMsg::EditKeyEvent(key) => {
-                    self.edit(*key);
+                    self.edit(key);
                 }
             }
         }

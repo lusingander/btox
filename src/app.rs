@@ -103,8 +103,8 @@ impl App {
             Msg::NotifyError(msg) => {
                 self.notification = Notification::Error(msg);
             }
-            Msg::Page(ref page_msg) => {
-                let tool_msg = self.tool_pane.update(Msg::Page(page_msg.clone()));
+            Msg::Page(page_msg) => {
+                let tool_msg = self.tool_pane.update(Msg::Page(page_msg));
                 return tool_msg;
             }
             _ => {

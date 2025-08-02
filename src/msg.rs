@@ -19,7 +19,7 @@ pub enum Msg {
     Page(PageMsg),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum PageMsg {
     Uuid(UuidMsg),
     Ulid(UlidMsg),
@@ -28,7 +28,7 @@ pub enum PageMsg {
     NumberBase(NumberBaseMsg),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum UuidMsg {
     SelectNextItem,
     SelectPrevItem,
@@ -41,7 +41,7 @@ pub enum UuidMsg {
     Paste,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum UlidMsg {
     SelectNextItem,
     SelectPrevItem,
@@ -54,7 +54,7 @@ pub enum UlidMsg {
     Paste,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum HashMsg {
     SelectNextItem,
     SelectPrevItem,
@@ -66,7 +66,7 @@ pub enum HashMsg {
     Paste,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum UnixTimeMsg {
     SelectNextItem,
     SelectPrevItem,
@@ -79,7 +79,7 @@ pub enum UnixTimeMsg {
     Paste,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum NumberBaseMsg {
     SelectNextItem,
     SelectPrevItem,

@@ -122,7 +122,7 @@ impl Page for UuidPage {
         Some(Msg::Page(PageMsg::Uuid(msg)))
     }
 
-    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+    fn update(&mut self, msg: PageMsg) -> Option<Msg> {
         if let PageMsg::Uuid(msg) = msg {
             match msg {
                 UuidMsg::SelectNextItem => {

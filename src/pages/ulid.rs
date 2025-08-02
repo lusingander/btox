@@ -84,7 +84,7 @@ impl Page for UlidPage {
         Some(Msg::Page(PageMsg::Ulid(msg)))
     }
 
-    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+    fn update(&mut self, msg: PageMsg) -> Option<Msg> {
         if let PageMsg::Ulid(msg) = msg {
             match msg {
                 UlidMsg::SelectNextItem => {

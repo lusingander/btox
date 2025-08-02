@@ -123,7 +123,7 @@ impl Page for HashPage {
         Some(Msg::Page(PageMsg::Hash(msg)))
     }
 
-    fn update(&mut self, msg: &PageMsg) -> Option<Msg> {
+    fn update(&mut self, msg: PageMsg) -> Option<Msg> {
         if let PageMsg::Hash(msg) = msg {
             match msg {
                 HashMsg::SelectNextItem => {

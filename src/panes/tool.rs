@@ -51,7 +51,7 @@ impl Pane for ToolPane {
                 self.page = Box::new(NumberBasePage::new(self.focused));
             }
             Msg::Page(page_msg) => {
-                return self.page.update(&page_msg);
+                return self.page.update(page_msg);
             }
             _ => {}
         }
