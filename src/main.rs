@@ -7,52 +7,12 @@ mod panes;
 mod util;
 mod widget;
 
-use std::{
-    io::{stdout, Stdout},
-    panic,
-};
-
-use ratatui::{
-    backend::{Backend, CrosstermBackend},
-    crossterm::{
-        execute,
-        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    },
-    Terminal,
-};
-
 use crate::app::App;
 
-fn setup() -> std::io::Result<Terminal<CrosstermBackend<Stdout>>> {
-    enable_raw_mode()?;
-    execute!(stdout(), EnterAlternateScreen)?;
-    let backend = CrosstermBackend::new(stdout());
-    Terminal::new(backend)
-}
-
-fn shutdown() -> std::io::Result<()> {
-    execute!(stdout(), LeaveAlternateScreen)?;
-    disable_raw_mode()?;
-    Ok(())
-}
-
-fn initialize_panic_handler() {
-    let original_hook = panic::take_hook();
-    panic::set_hook(Box::new(move |panic_info| {
-        shutdown().unwrap();
-        original_hook(panic_info);
-    }));
-}
-
-fn run<B: Backend>(terminal: &mut Terminal<B>) -> std::io::Result<()> {
-    let (_, rx) = event::new();
-    App::new().start(terminal, rx)
-}
-
 fn main() -> std::io::Result<()> {
-    initialize_panic_handler();
-    let mut terminal = setup()?;
-    let ret = run(&mut terminal);
-    shutdown()?;
+    let mut terminal = ratatui::try_init()?;
+    let (_, rx) = event::new();
+    let ret = App::new().start(&mut terminal, rx);
+    ratatui::try_restore()?;
     ret
 }
