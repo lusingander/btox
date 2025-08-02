@@ -12,6 +12,7 @@ pub enum Msg {
 
     ToolPaneSelectUuidPage,
     ToolPaneSelectUlidPage,
+    ToolPaneSelectBase64Page,
     ToolPaneSelectHashPage,
     ToolPaneSelectUnixTimePage,
     ToolPaneSelectNumberBasePage,
@@ -23,6 +24,7 @@ pub enum Msg {
 pub enum PageMsg {
     Uuid(UuidMsg),
     Ulid(UlidMsg),
+    Base64(Base64Msg),
     Hash(HashMsg),
     UnixTime(UnixTimeMsg),
     NumberBase(NumberBaseMsg),
@@ -50,6 +52,18 @@ pub enum UlidMsg {
     ScrollDown,
     ScrollUp,
     Generate,
+    Copy,
+    Paste,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum Base64Msg {
+    SelectNextItem,
+    SelectPrevItem,
+    CurrentItemSelectNext,
+    CurrentItemSelectPrev,
+    ScrollDown,
+    ScrollUp,
     Copy,
     Paste,
 }
