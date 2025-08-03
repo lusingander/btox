@@ -1,5 +1,5 @@
 use itsuki::zero_indexed_enum;
-use percent_encoding::{percent_decode_str, utf8_percent_encode, AsciiSet, CONTROLS};
+use percent_encoding::{percent_decode_str, utf8_percent_encode, NON_ALPHANUMERIC};
 use ratatui::{
     crossterm::event::KeyCode,
     layout::Rect,
@@ -18,8 +18,6 @@ use crate::{
         select::Select,
     },
 };
-
-const FRAGMENT: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
 
 pub struct UrlPage {
     focused: bool,
@@ -311,7 +309,7 @@ fn calculate_url(
     match eod_sel {
         EncodeOrDecodeSelect::Encode => {
             let output = match charset_sel {
-                CharsetSelect::Utf8 => utf8_percent_encode(input, FRAGMENT).to_string(),
+                CharsetSelect::Utf8 => utf8_percent_encode(input, NON_ALPHANUMERIC).to_string(),
             };
             (output, InputStatus::None)
         }
