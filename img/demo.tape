@@ -78,6 +78,24 @@ Type "j"
 Sleep 500ms
 Tab
 
+# url
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Copy '?query="foo bar"'
+Type "p"
+Sleep 500ms
+Screenshot ./img/url.png
+Sleep 500ms
+
+Tab
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Tab
+
 # hash
 Sleep 500ms
 Type "j"
