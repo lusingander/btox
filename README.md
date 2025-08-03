@@ -25,6 +25,10 @@ my personal toolbox app
 
 <img src="./img/ulid.png" width=600>
 
+### Base64
+
+<img src="./img/base64.png" width=600>
+
 ### Hash
 
 <img src="./img/hash.png" width=600>
