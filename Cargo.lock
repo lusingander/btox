@@ -119,6 +119,7 @@ dependencies = [
  "chrono",
  "itsuki",
  "md-5",
+ "percent-encoding",
  "ratatui",
  "ratatui-macros",
  "rstest",

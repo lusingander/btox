@@ -9,7 +9,7 @@ use crate::{
     msg::Msg,
     pages::{
         base64::Base64Page, hash::HashPage, number::NumberBasePage, page::Page, ulid::UlidPage,
-        unixtime::UnixTimePage, uuid::UuidPage,
+        unixtime::UnixTimePage, url::UrlPage, uuid::UuidPage,
     },
     panes::pane::Pane,
 };
@@ -43,6 +43,9 @@ impl Pane for ToolPane {
             }
             Msg::ToolPaneSelectBase64Page => {
                 self.page = Box::new(Base64Page::new(self.focused));
+            }
+            Msg::ToolPaneSelectUrlPage => {
+                self.page = Box::new(UrlPage::new(self.focused));
             }
             Msg::ToolPaneSelectHashPage => {
                 self.page = Box::new(HashPage::new(self.focused));

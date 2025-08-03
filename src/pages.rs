@@ -6,4 +6,5 @@ pub mod hash;
 pub mod number;
 pub mod ulid;
 pub mod unixtime;
+pub mod url;
 pub mod uuid;
