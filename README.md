@@ -4,6 +4,12 @@ my personal toolbox app
 
 <img src="./img/demo.gif" width=800>
 
+## Installation
+
+```
+cargo install --git https://github.com/lusingander/btox
+```
+
 ## Usage
 
 ### Common keybindings
