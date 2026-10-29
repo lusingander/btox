@@ -96,6 +96,52 @@ Type "j"
 Sleep 500ms
 Tab
 
+# unicode escape
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type@200ms "ll"
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Copy '{"message":"Hello, 世界! 😀","tool":"btox"}'
+Type "p"
+Sleep 500ms
+Screenshot ./img/unicode.png
+Sleep 500ms
+
+# escape all characters, including ASCII
+Type "k"
+Sleep 500ms
+Type "l"
+Sleep 1s
+
+# decode the encoded JSON document
+Type "j"
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type "y"
+Sleep 500ms
+Type@200ms "kkkk"
+Sleep 500ms
+Type "l"
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Type "p"
+Sleep 1s
+
+Tab
+Sleep 500ms
+Type "j"
+Sleep 500ms
+Tab
+
 # hash
 Sleep 500ms
 Type "j"
