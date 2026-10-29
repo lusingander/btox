@@ -5,6 +5,7 @@ pub mod base64;
 pub mod hash;
 pub mod number;
 pub mod ulid;
+pub mod unicode;
 pub mod unixtime;
 pub mod url;
 pub mod uuid;
