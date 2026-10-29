@@ -39,6 +39,10 @@ cargo install --git https://github.com/lusingander/btox
 
 <img src="./img/url.png" width=600>
 
+### Unicode escape
+
+<img src="./img/unicode.png" width=600>
+
 ### Hash
 
 <img src="./img/hash.png" width=600>
