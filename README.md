@@ -51,7 +51,7 @@ cargo install --git https://github.com/lusingander/btox
 
 <img src="./img/unixtime.png" width=600>
 
-Datetime output format follows [strftime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html).
+Datetime output format follows [strftime](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html).
 
 ### Number base
 
