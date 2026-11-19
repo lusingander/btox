@@ -1,5 +1,5 @@
-use chrono::{DateTime, Local, Utc};
 use itsuki::zero_indexed_enum;
+use jiff::{fmt::strtime, tz::TimeZone, Timestamp};
 use ratatui::{
     crossterm::event::KeyCode,
     layout::Rect,
@@ -17,7 +17,7 @@ use crate::{
     widget::select::Select,
 };
 
-const DEFAUT_OUTPUT_FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.f%:z";
+const DEFAULT_OUTPUT_FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.f%:z";
 
 pub struct UnixTimePage {
     focused: bool,
@@ -56,7 +56,7 @@ impl Status {
 
 impl UnixTimePage {
     pub fn new(focused: bool) -> UnixTimePage {
-        let output_format = Input::new(DEFAUT_OUTPUT_FORMAT.to_string());
+        let output_format = Input::new(DEFAULT_OUTPUT_FORMAT.to_string());
         UnixTimePage {
             focused,
             cur: CurrentStatus {
@@ -334,33 +334,36 @@ impl UnixTimePage {
     }
 
     fn update_output(&mut self) {
+        self.cur.output.clear();
+        self.cur.input_status = Status::None;
+        self.cur.output_format_status = Status::None;
+
         let s = self.cur.input.value();
         if s.is_empty() {
-            self.cur.output = String::new();
-            self.cur.input_status = Status::None;
-        } else if let Some(dt) = parse_as_unix_timestamp(s) {
-            let f = self.cur.output_format.value();
-            if is_valid_datetime_format(f) {
-                self.cur.output = match self.cur.tz_sel {
-                    TimeZoneItemSelect::Utc => {
-                        dt.datetime.with_timezone(&Utc).format(f).to_string()
-                    }
-                    TimeZoneItemSelect::Local => {
-                        dt.datetime.with_timezone(&Local).format(f).to_string()
-                    }
-                };
-                self.cur.output_format_status = Status::None;
-            } else {
-                self.cur.output = String::new();
-                self.cur.output_format_status = Status::Warn("invalid format".into());
-            }
+            return;
+        }
+
+        if let Some(dt) = parse_as_unix_timestamp(s) {
             let msg = format!("valid unix timestamp ({:?})", dt.resolution);
             self.cur.input_status = Status::Info(msg);
+            let time_zone = match self.cur.tz_sel {
+                TimeZoneItemSelect::Utc => TimeZone::UTC,
+                TimeZoneItemSelect::Local => match TimeZone::try_system() {
+                    Ok(time_zone) => time_zone,
+                    Err(_) => {
+                        self.cur.input_status = Status::Warn("local time zone unavailable".into());
+                        return;
+                    }
+                },
+            };
+            match format_datetime(dt.timestamp, self.cur.output_format.value(), time_zone) {
+                Ok(output) => self.cur.output = output,
+                Err(_) => self.cur.output_format_status = Status::Warn("invalid format".into()),
+            }
         } else if let Some(dt) = parse_as_datetime(s) {
-            self.cur.output = dt.timestamp().to_string();
+            self.cur.output = to_unix_seconds(dt).to_string();
             self.cur.input_status = Status::Info("valid datetime".into());
         } else {
-            self.cur.output = String::new();
             self.cur.input_status = Status::Warn("invalid input".into());
         }
     }
@@ -412,12 +415,12 @@ impl UnixTimePage {
     }
 }
 
-struct DateTimeWithResolution {
-    datetime: DateTime<Utc>,
+struct TimestampWithResolution {
+    timestamp: Timestamp,
     resolution: Resolution,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum Resolution {
     Second,
     Milli,
@@ -425,101 +428,234 @@ enum Resolution {
     Nano,
 }
 
-fn parse_as_unix_timestamp(s: &str) -> Option<DateTimeWithResolution> {
+fn parse_as_unix_timestamp(s: &str) -> Option<TimestampWithResolution> {
     s.parse::<u128>().ok().and_then(to_timestamp)
 }
 
-fn to_timestamp(t: u128) -> Option<DateTimeWithResolution> {
-    if t < 1_000_000_000_000 {
-        // seconds
-        DateTime::from_timestamp(t as i64, 0).map(|datetime| DateTimeWithResolution {
-            datetime,
-            resolution: Resolution::Second,
-        })
+fn to_timestamp(t: u128) -> Option<TimestampWithResolution> {
+    let (units_per_second, resolution) = if t < 1_000_000_000_000 {
+        (1, Resolution::Second)
     } else if t < 1_000_000_000_000_000 {
-        // millis
-        let sec = t / 1_000;
-        let millis = t % 1_000;
-        DateTime::from_timestamp(sec as i64, millis as u32 * 1_000_000).map(|datetime| {
-            DateTimeWithResolution {
-                datetime,
-                resolution: Resolution::Milli,
-            }
-        })
+        (1_000, Resolution::Milli)
     } else if t < 1_000_000_000_000_000_000 {
-        // micros
-        let sec = t / 1_000_000;
-        let micros = t % 1_000_000;
-        DateTime::from_timestamp(sec as i64, micros as u32 * 1_000).map(|datetime| {
-            DateTimeWithResolution {
-                datetime,
-                resolution: Resolution::Micro,
-            }
-        })
+        (1_000_000, Resolution::Micro)
     } else if t < 1_000_000_000_000_000_000_000 {
-        // nanos
-        let sec = t / 1_000_000_000;
-        let nanos = t % 1_000_000_000;
-        DateTime::from_timestamp(sec as i64, nanos as u32).map(|datetime| DateTimeWithResolution {
-            datetime,
-            resolution: Resolution::Nano,
-        })
+        (1_000_000_000, Resolution::Nano)
     } else {
-        // too large
-        None
-    }
+        return None;
+    };
+
+    let second = (t / units_per_second) as i64;
+    let nanosecond = ((t % units_per_second) * (1_000_000_000 / units_per_second)) as i32;
+    Timestamp::new(second, nanosecond)
+        .ok()
+        .map(|timestamp| TimestampWithResolution {
+            timestamp,
+            resolution,
+        })
 }
 
-fn parse_as_datetime(s: &str) -> Option<DateTime<Utc>> {
-    s.parse::<DateTime<Utc>>().ok()
+fn parse_as_datetime(s: &str) -> Option<Timestamp> {
+    s.trim().parse().ok()
 }
 
-fn is_valid_datetime_format(s: &str) -> bool {
-    // https://github.com/chronotope/chrono/issues/47#issuecomment-320471394
-    chrono::format::StrftimeItems::new(s).all(|item| item != chrono::format::Item::Error)
+fn to_unix_seconds(timestamp: Timestamp) -> i128 {
+    // Preserve floor rounding for instants before the Unix epoch.
+    timestamp.as_nanosecond().div_euclid(1_000_000_000)
+}
+
+fn format_datetime(
+    timestamp: Timestamp,
+    format: &str,
+    time_zone: TimeZone,
+) -> Result<String, jiff::Error> {
+    strtime::format(format, &timestamp.to_zoned_datetime(time_zone))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn test_to_timestamp() {
+    #[rstest]
+    #[case(0, "1970-01-01T00:00:00Z", Resolution::Second)]
+    #[case(1_634_567_890, "2021-10-18T14:38:10Z", Resolution::Second)]
+    #[case(1_634_567_890_123, "2021-10-18T14:38:10.123Z", Resolution::Milli)]
+    #[case(
+        1_634_567_890_123_456,
+        "2021-10-18T14:38:10.123456Z",
+        Resolution::Micro
+    )]
+    #[case(
+        1_634_567_890_123_456_789,
+        "2021-10-18T14:38:10.123456789Z",
+        Resolution::Nano
+    )]
+    #[case(1_634_567, "1970-01-19T22:02:47Z", Resolution::Second)]
+    #[case(1_000_000_000_000, "2001-09-09T01:46:40Z", Resolution::Milli)]
+    #[case(1_000_000_000_000_000, "2001-09-09T01:46:40Z", Resolution::Micro)]
+    #[case(1_000_000_000_000_000_000, "2001-09-09T01:46:40Z", Resolution::Nano)]
+    #[case(
+        253_402_207_200_999_999_999,
+        "9999-12-30T22:00:00.999999999Z",
+        Resolution::Nano
+    )]
+    fn test_to_timestamp(
+        #[case] input: u128,
+        #[case] expected: &str,
+        #[case] resolution: Resolution,
+    ) {
+        let actual = to_timestamp(input).unwrap();
+        assert_eq!(actual.timestamp, expected.parse::<Timestamp>().unwrap());
+        assert_eq!(actual.resolution, resolution);
+    }
+
+    #[rstest]
+    #[case("-1")]
+    #[case("1.5")]
+    #[case(" 123 ")]
+    #[case("253402207201")]
+    #[case("999999999999")]
+    #[case("999999999999999")]
+    #[case("999999999999999999")]
+    #[case("253402207201000000000")]
+    #[case("1634567890123456789000")]
+    #[case("340282366920938463463374607431768211455")]
+    fn test_parse_as_unix_timestamp_rejects_invalid_input(#[case] input: &str) {
+        assert!(parse_as_unix_timestamp(input).is_none());
+    }
+
+    #[rstest]
+    #[case("2021-10-18T14:38:10.123456789Z", 1_634_567_890)]
+    #[case("2021-10-18T23:38:10+09:00", 1_634_567_890)]
+    #[case(" 2021-10-18 14:38:10Z \n", 1_634_567_890)]
+    #[case("1970-01-01T00:00:00Z", 0)]
+    #[case("1969-12-31T23:59:59.5Z", -1)]
+    #[case("1969-12-31T23:59:59Z", -1)]
+    #[case("1969-12-31T23:59:58.999999999Z", -2)]
+    fn test_datetime_to_unix_seconds(#[case] input: &str, #[case] expected: i128) {
+        assert_eq!(to_unix_seconds(parse_as_datetime(input).unwrap()), expected);
+    }
+
+    #[rstest]
+    #[case("2021-10-18T14:38:10")]
+    #[case("2021-02-29T00:00:00Z")]
+    #[case("2021-10-18T14:38:10Z trailing")]
+    #[case("+010000-01-01T00:00:00Z")]
+    fn test_parse_as_datetime_rejects_invalid_input(#[case] input: &str) {
+        assert!(parse_as_datetime(input).is_none());
+    }
+
+    #[rstest]
+    #[case("2021-10-18T14:38:10Z", "2021-10-18T14:38:10+00:00")]
+    #[case("2021-10-18T14:38:10.100Z", "2021-10-18T14:38:10.1+00:00")]
+    #[case("2021-10-18T14:38:10.123456Z", "2021-10-18T14:38:10.123456+00:00")]
+    #[case(
+        "2021-10-18T14:38:10.123456789Z",
+        "2021-10-18T14:38:10.123456789+00:00"
+    )]
+    fn test_format_datetime(#[case] input: &str, #[case] expected: &str) {
+        let timestamp = input.parse().unwrap();
         assert_eq!(
-            to_timestamp(1_634_567_890).map(|d| d.datetime),
-            parse_from_rfc3339("2021-10-18T14:38:10Z")
-        );
-        assert_eq!(
-            to_timestamp(1_634_567_890_123).map(|d| d.datetime),
-            parse_from_rfc3339("2021-10-18T14:38:10.123Z")
-        );
-        assert_eq!(
-            to_timestamp(1_634_567_890_123_456).map(|d| d.datetime),
-            parse_from_rfc3339("2021-10-18T14:38:10.123456Z")
-        );
-        assert_eq!(
-            to_timestamp(1_634_567_890_123_456_789).map(|d| d.datetime),
-            parse_from_rfc3339("2021-10-18T14:38:10.123456789Z")
-        );
-        assert_eq!(
-            to_timestamp(1_634_567).map(|d| d.datetime),
-            parse_from_rfc3339("1970-01-19T22:02:47.000Z")
-        );
-        assert_eq!(
-            to_timestamp(1_634_567_890_123_456_789_000).map(|d| d.datetime),
-            None
+            format_datetime(timestamp, DEFAULT_OUTPUT_FORMAT, TimeZone::UTC).unwrap(),
+            expected
         );
     }
 
-    fn parse_from_rfc3339(s: &str) -> Option<DateTime<Utc>> {
-        Some(DateTime::parse_from_rfc3339(s).unwrap().to_utc())
+    #[rstest]
+    #[case("%Y-%m-%d", "1970-01-01")]
+    #[case("%9f", "000000000")]
+    #[case("%%", "%")]
+    #[case("", "")]
+    fn test_format_datetime_custom_format(#[case] format: &str, #[case] expected: &str) {
+        assert_eq!(
+            format_datetime(Timestamp::UNIX_EPOCH, format, TimeZone::UTC).unwrap(),
+            expected
+        );
+    }
+
+    #[rstest]
+    #[case("%")]
+    #[case("%Y-%m-%dT%H:%M:%S%.f%:z%")]
+    #[case("%J")]
+    #[case("%+")]
+    fn test_format_datetime_rejects_invalid_format(#[case] format: &str) {
+        assert!(format_datetime(Timestamp::UNIX_EPOCH, format, TimeZone::UTC).is_err());
+    }
+
+    #[rstest]
+    #[case("Asia/Tokyo", "2024-01-01T00:00:00Z", "2024-01-01T09:00:00+09:00")]
+    #[case(
+        "America/New_York",
+        "2024-01-01T00:00:00Z",
+        "2023-12-31T19:00:00-05:00"
+    )]
+    #[case(
+        "America/New_York",
+        "2024-07-01T00:00:00Z",
+        "2024-06-30T20:00:00-04:00"
+    )]
+    fn test_format_datetime_in_time_zone(
+        #[case] time_zone: &str,
+        #[case] input: &str,
+        #[case] expected: &str,
+    ) {
+        assert_eq!(
+            format_datetime(
+                input.parse().unwrap(),
+                DEFAULT_OUTPUT_FORMAT,
+                TimeZone::get(time_zone).unwrap(),
+            )
+            .unwrap(),
+            expected
+        );
     }
 
     #[test]
-    fn test_is_valid_datetime_format() {
-        assert!(is_valid_datetime_format("%Y-%m-%dT%H:%M:%S%.f%:z"));
-        assert!(is_valid_datetime_format("%Y-%m-%d"));
-        assert!(!is_valid_datetime_format("%Y-%m-%dT%H:%M:%S%.f%:z%"));
-        assert!(!is_valid_datetime_format("%"));
+    fn test_update_output_recovers_from_errors() {
+        let mut page = UnixTimePage::new(true);
+        page.cur.input = Input::new("1634567890".into());
+        page.update_output();
+        assert_eq!(page.cur.output, "2021-10-18T14:38:10+00:00");
+
+        page.cur.output_format = Input::new("%".into());
+        page.update_output();
+        assert!(page.cur.output.is_empty());
+        assert!(matches!(page.cur.output_format_status, Status::Warn(_)));
+
+        page.cur.output_format = Input::new("%Y-%m-%d".into());
+        page.update_output();
+        assert_eq!(page.cur.output, "2021-10-18");
+        assert!(matches!(page.cur.output_format_status, Status::None));
+
+        page.cur.input = Input::new("invalid".into());
+        page.update_output();
+        assert!(page.cur.output.is_empty());
+        assert!(matches!(page.cur.input_status, Status::Warn(_)));
+
+        page.cur.input = Input::new("1969-12-31T23:59:59.5Z".into());
+        page.update_output();
+        assert_eq!(page.cur.output, "-1");
+        assert!(matches!(page.cur.input_status, Status::Info(_)));
+    }
+
+    #[rstest]
+    #[case("", "")]
+    #[case("invalid", "")]
+    #[case("2021-10-18T14:38:10Z", "1634567890")]
+    fn test_update_output_clears_stale_format_error(#[case] input: &str, #[case] expected: &str) {
+        let mut page = UnixTimePage::new(true);
+        page.cur.input = Input::new("1634567890".into());
+        page.cur.output_format = Input::new("%".into());
+        page.update_output();
+        assert!(matches!(page.cur.output_format_status, Status::Warn(_)));
+
+        page.cur.input = Input::new(input.into());
+        page.update_output();
+        assert_eq!(page.cur.output, expected);
+        assert!(matches!(page.cur.output_format_status, Status::None));
+        if input.is_empty() {
+            assert!(matches!(page.cur.input_status, Status::None));
+        }
     }
 }
